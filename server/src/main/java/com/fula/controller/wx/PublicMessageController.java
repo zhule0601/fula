@@ -1,7 +1,7 @@
 package com.fula.controller.wx;
 
 import com.fula.util.SessionUtil;
-import com.fula.util.WXUtil;
+import com.fula.component.WXComponent;
 import me.chanjar.weixin.mp.bean.message.WxMpXmlMessage;
 import me.chanjar.weixin.mp.bean.message.WxMpXmlOutMessage;
 import org.slf4j.Logger;
@@ -35,7 +35,7 @@ public class PublicMessageController {
                                HttpServletResponse response){
         try {
             String ip = SessionUtil.getIpAddress(request);
-            if (WXUtil.getWxMpService().checkSignature(timestamp, nonce, signature)) {
+            if (WXComponent.getWxMpService().checkSignature(timestamp, nonce, signature)) {
                 PrintWriter out = response.getWriter();
                 out.print(echostr);
                 out.close();
@@ -58,7 +58,7 @@ public class PublicMessageController {
             } else {
                 logger.info("get message from admin. {}", message);
             }
-            WxMpXmlOutMessage outMessage = WXUtil.getRouter().route(message);
+            WxMpXmlOutMessage outMessage = WXComponent.getRouter().route(message);
 
             if (outMessage == null) {
                 //为null，说明路由配置有问题，需要注意

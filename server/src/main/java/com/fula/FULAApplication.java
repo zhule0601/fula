@@ -3,6 +3,8 @@ package com.fula;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.annotation.EnableScheduling;
+
 /**
  * @author zl
  * @description springboot 启动类
@@ -10,6 +12,7 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 @SpringBootApplication
+@EnableScheduling
 public class FULAApplication {
 
     public static void main(String[] args) {

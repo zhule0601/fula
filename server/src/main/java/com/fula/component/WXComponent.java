@@ -1,4 +1,4 @@
-package com.fula.util;
+package com.fula.component;
 
 import me.chanjar.weixin.mp.api.WxMpMessageHandler;
 import me.chanjar.weixin.mp.api.WxMpMessageRouter;
@@ -18,7 +18,7 @@ import javax.annotation.PostConstruct;
  * @date 2020/8/29 10:47
  */
 @Component
-public class WXUtil {
+public class WXComponent {
 
     private static WxMpService wxMpService;
     private static WxMpMessageRouter wxMpMessageRouter;
@@ -41,7 +41,7 @@ public class WXUtil {
         config.setAesKey(aesKey); // 设置微信公众号的EncodingAESKey
         wxMpService = new WxMpServiceImpl();
         wxMpService.setWxMpConfigStorage(config);
-        wxMpMessageRouter = new WxMpMessageRouter(WXUtil.getWxMpService());
+        wxMpMessageRouter = new WxMpMessageRouter(WXComponent.getWxMpService());
         wxMpMessageRouter
                 .rule().async(false).rContent("bilibili").handler(getBilibiliHandler()).end()
                 .rule().async(false).handler(getTextHandler()).end();
