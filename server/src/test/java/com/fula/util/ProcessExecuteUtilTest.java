@@ -10,13 +10,13 @@ import org.springframework.test.context.junit4.SpringRunner;
 import java.util.ArrayList;
 import java.util.List;
 
-@ActiveProfiles("dev")
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = FULAApplication.class)
+//@ActiveProfiles("dev")
+//@RunWith(SpringRunner.class)
+//@SpringBootTest(classes = FULAApplication.class)
 public class ProcessExecuteUtilTest {
 
 
-    @Test
+    //@Test
     public void exec() {
         List<String> cmd = new ArrayList<>();
         cmd.add("/bin/bash");

@@ -5,6 +5,8 @@
 *.log
 .project
 .classpath
-/server/target/*
 *.zip
 /server/src/main/resources/application-dev.properties
+/target/
+/server/target/*
+/note/target/*
