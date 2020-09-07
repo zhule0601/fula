@@ -1,0 +1,29 @@
+# This is a basic workflow to help you get started with Actions
+
+name: CI-BUILD
+
+# Controls when the action will run. Triggers the workflow on push or pull request
+# events but only for the master branch
+on:
+  push:
+    branches: [ feature/assembly_package ]
+  pull_request:
+    branches: [ feature/assembly_package ]
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+
+    # 第一步: 下载源码（CI/CD 拉取代码到自己的本地）
+    - name: Checkout
+      uses: actions/checkout@feature/assembly_package
+    # 第二步: 设置 JDK 版本
+    - name: Set up JDK 1.8
+      uses: actions/setup-java@v1
+      with:
+        java-version: 1.8
+    # 第三步: maven 打包
+    - name: Build with Maven
+      run: mvn clean package -DskipTests=true
