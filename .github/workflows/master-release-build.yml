@@ -1,13 +1,14 @@
 # This workflow will build a Java project with Maven
 # For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-maven
 
-name: MASTER RELEASE BUILD WITH MAVEN
+name: FEATURE RELEASE BUILD WITH MAVEN
 
 on:
   push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
+    branches:
+      - 'feature/*'
+      - '!master'
+      - '!test/*'
 
 jobs:
   build:
@@ -15,33 +16,71 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up JDK 1.8
-      uses: actions/setup-java@v1
-      with:
-        java-version: 1.8
-    - name: Build with Maven
-      run: mvn -DskipTests=true -B package --file pom.xml
-      
-      
-    - name: Create Release # 创建Release，可以在仓库看到一个个版本
-      id: create_release
-      uses: actions/create-release@master
-      env:
-        GITHUB_TOKEN: ${{ secrets.TOKEN }} # 之前GitHub添加的Token
-      with:
-        tag_name: CI ${{ github.ref }} # (tag)标签名称
-        release_name: Release ${{ github.ref }}
-        draft: false # 是否是草稿
-        prerelease: false # 是否是预发布
-      
-    - name: Upload Release Asset
-      id: upload-release-asset
-      uses: actions/upload-release-asset@master
-      env:
-        GITHUB_TOKEN: ${{ secrets.TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }} # 上传地址，通过创建Release获取到的
-        asset_path: ./target/fula-robot.tar.gz # 要上传文件
-        asset_name: fula-robot-${{ github.sha }}.tar.gz # 上传后的文件名
-        asset_content_type: application/x-tgz
+      - uses: actions/checkout@v2
+      - name: Set up JDK 1.8
+        uses: actions/setup-java@v1
+        with:
+          java-version: 1.8
+      - name: Build with Maven
+        run: mvn -DskipTests=true -B package --file pom.xml
+
+
+      - name: deploy file to server
+        uses: wlixcc/SFTP-Deploy-Action@v1.0
+        with:
+          username: '${{ secrets.CI_USER }}'
+          server: '${{ secrets.SERVER_IP }}'
+          ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
+          local_path: './target/'
+          remote_path: '/home/github/'
+
+
+
+# This workflow will build a Java project with Maven
+# For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-maven
+
+# name: MASTER RELEASE BUILD WITH MAVEN
+#
+# on:
+#   push:
+#     branches: [ master ]
+#   pull_request:
+#     branches: [ master ]
+#
+# jobs:
+#   build:
+#
+#     runs-on: ubuntu-latest
+#
+#     steps:
+#     - uses: actions/checkout@v2
+#     - name: Set up JDK 1.8
+#       uses: actions/setup-java@v1
+#       with:
+#         java-version: 1.8
+#     - name: Build with Maven
+#       run: mvn -DskipTests=true -B package --file pom.xml
+#
+#
+#     - name: Create Release # 创建Release，可以在仓库看到一个个版本
+#       id: create_release
+#       uses: actions/create-release@master
+#       env:
+#         GITHUB_TOKEN: ${{ secrets.TOKEN }} # 之前GitHub添加的Token
+#       with:
+#         tag_name: CI ${{ github.ref }} # (tag)标签名称
+#         release_name: Release ${{ github.ref }}
+#         draft: false # 是否是草稿
+#         prerelease: false # 是否是预发布
+#
+#     - name: Upload Release Asset
+#       id: upload-release-asset
+#       uses: actions/upload-release-asset@master
+#       env:
+#         GITHUB_TOKEN: ${{ secrets.TOKEN }}
+#       with:
+#         upload_url: ${{ steps.create_release.outputs.upload_url }} # 上传地址，通过创建Release获取到的
+#         asset_path: ./target/fula-robot.tar.gz # 要上传文件
+#         asset_name: fula-robot-${{ github.sha }}.tar.gz # 上传后的文件名
+#         asset_content_type: application/x-tgz
+#

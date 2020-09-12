@@ -11,6 +11,7 @@
     <property name="FILE_LOG_PATTERN"
               value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n"/>
 
+    <property name="logDir" value="${app.home}/log"/>
 
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
@@ -20,8 +21,8 @@
 
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>server/log/fula.log.%d{yyyy-MM-dd}</fileNamePattern>
-            <maxHistory>30</maxHistory>
+            <fileNamePattern>${logDir}/fula_%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>20</maxHistory>
         </rollingPolicy>
         <encoder>
             <pattern>${FILE_LOG_PATTERN}</pattern>
@@ -29,7 +30,7 @@
     </appender>
 
     <root level="INFO">
-        <appender-ref ref="STDOUT"/>
-        <!--<appender-ref ref="FILE"/>-->
+        <!--<appender-ref ref="STDOUT"/>-->
+        <appender-ref ref="FILE"/>
     </root>
 </configuration>

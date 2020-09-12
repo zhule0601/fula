@@ -43,11 +43,30 @@
                     </descriptors>
 
                     <!--suppress UnresolvedMavenProperty -->
-                    <finalName>fula-robot</finalName>
+                    <finalName>fula-robot-${timestamp}</finalName>
                     <appendAssemblyId>false</appendAssemblyId>
                 </configuration>
             </plugin>
 
+            <!--timestamp-->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>1.9.1</version>
+                <executions>
+                    <execution>
+                        <id>timestamp-property</id>
+                        <goals>
+                            <goal>timestamp-property</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <name>timestamp</name>
+                    <pattern>yyyyMMdd-HHmm</pattern>
+                    <timeZone>GMT+8</timeZone>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
