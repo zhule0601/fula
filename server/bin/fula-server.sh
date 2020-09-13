@@ -37,7 +37,7 @@ APP_MAINCLASS=com.fula.FULAApplication
 #java虚拟机启动参数
 #             初始堆内存|最大堆内存|内存溢出时DUMP堆内存|打印GC详细信息|gc日志输出位置|打印GC时间戳|GC日志文件滚动|跟踪类加载信息
 DEFAULT_JVM_OPTS="-Xms2g -Xmx2g -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=${LOG_DIR}/fula.hprof -XX:+PrintGCDetails -Xloggc:${LOG_DIR}/gc.log -XX:+PrintGCTimeStamps -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=5 -XX:GCLogFileSize=20m "
-DEFAULT_APP_PROPERTY=" -Dfile.encoding=UTF-8 -Dlogging.config=${LOGBACK_FILE} -Dapp.home=${APP_HOME} -Djava.io.tmpdir=${VAR_DIR}"
+DEFAULT_APP_PROPERTY=" -Dspring.config.location=${CONF_DIR}/application.properties -Dfile.encoding=UTF-8 -Dlogging.config=${LOGBACK_FILE} -Dapp.home=${APP_HOME} -Djava.io.tmpdir=${VAR_DIR}"
  
 ###################################
 #(函数)判断程序是否已启动
