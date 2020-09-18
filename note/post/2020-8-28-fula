@@ -1,25 +1,25 @@
-´´½¨ fula ÏîÄ¿
+åˆ›å»º fula é¡¹ç›®
 
-### ´´½¨ springboot ÏîÄ¿ 
-- ÐÂ½¨Ò»¸ö maven ÏîÄ¿
-- ÅäÖÃ maven ²Ö¿â
-- ÐÞ¸Ä pom ÎÄ¼þ
-- ´´½¨ application.properties
-- ´´½¨Æô¶¯Àà
-- ´´½¨²âÊÔ controller
-- ÅäÖÃ logback
-- Æô¶¯²âÊÔ
+### åˆ›å»º springboot é¡¹ç›® 
+- æ–°å»ºä¸€ä¸ª maven é¡¹ç›®
+- é…ç½® maven ä»“åº“
+- ä¿®æ”¹ pom æ–‡ä»¶
+- åˆ›å»º application.properties
+- åˆ›å»ºå¯åŠ¨ç±»
+- åˆ›å»ºæµ‹è¯• controller
+- é…ç½® logback
+- å¯åŠ¨æµ‹è¯•
 
-### ÅäÖÃÈ«¾Ö HttpClientUtils
-- Ìí¼Ó pom
-- Á¬½Ó³Ø´óÐ¡ÅäÖÃ
-- ³¬Ê±Ê±¼äÅäÖÃ£¨socketTimeOUt£¬ConnectTimeout£©
-- Á¬½Ó³Ø¼à¿ØÅäÖÃ£¨idle thread£¬busy thread£©
-- ÈÕÖ¾´òÓ¡ÅäÖÃ£¨ºÄÊ±£¬Èë²Î£¬³ö²Î£©
+### é…ç½®å…¨å±€ HttpClientUtils
+- æ·»åŠ  pom
+- è¿žæŽ¥æ± å¤§å°é…ç½®
+- è¶…æ—¶æ—¶é—´é…ç½®ï¼ˆsocketTimeOUtï¼ŒConnectTimeoutï¼‰
+- è¿žæŽ¥æ± ç›‘æŽ§é…ç½®ï¼ˆidle threadï¼Œbusy threadï¼‰
+- æ—¥å¿—æ‰“å°é…ç½®ï¼ˆè€—æ—¶ï¼Œå…¥å‚ï¼Œå‡ºå‚ï¼‰
 
-### Î¢ÐÅ¹«ÖÚºÅ ÅäÖÃ
-- Î¢ÐÅ¹«ÖÚºÅsdk ÒýÈë
-- ¿ª·¢ÕßÖÐÐÄÅäÖÃ ·þÎñÆ÷µØÖ·
-- ±¾»úÅäÖÃ ngrok Ö§³Ö±¾µØµ÷ÊÔ
-- ÅäÖÃÎÄ¼þÅäÖÃ appId µÈÐÅÏ¢
+### å¾®ä¿¡å…¬ä¼—å· é…ç½®
+- å¾®ä¿¡å…¬ä¼—å·sdk å¼•å…¥
+- å¼€å‘è€…ä¸­å¿ƒé…ç½® æœåŠ¡å™¨åœ°å€
+- æœ¬æœºé…ç½® ngrok æ”¯æŒæœ¬åœ°è°ƒè¯•
+- é…ç½®æ–‡ä»¶é…ç½® appId ç­‰ä¿¡æ¯
 

@@ -1,0 +1,10 @@
+GET http://localhost:80/state
+Accept: application/json
+
+###
+POST http://localhost:80/user/wx
+Content-Type: application/x-www-form-urlencoded
+
+wxId=123
+
+###
