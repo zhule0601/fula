@@ -23,13 +23,13 @@ public class WXComponent {
     private static WxMpService wxMpService;
     private static WxMpMessageRouter wxMpMessageRouter;
 
-    @Value("${appId}")
+    @Value("${wx.appId}")
     private String appId;
-    @Value("${token}")
+    @Value("${wx.token}")
     private String token;
-    @Value("${secret}")
+    @Value("${wx.secret}")
     private String secret;
-    @Value("${aesKey}")
+    @Value("${wx.aesKey}")
     private String aesKey;
 
     @PostConstruct
