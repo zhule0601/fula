@@ -32,7 +32,7 @@ jobs:
           server: '${{ secrets.SERVER_IP }}'
           ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
           local_path: './target/*.tar.gz'
-          remote_path: '/home/github/'
+          remote_path: '/opt/build/'
 
 
 
