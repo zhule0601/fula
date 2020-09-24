@@ -26,7 +26,7 @@ jobs:
 
 
       - name: deploy file to server
-        uses: wlixcc/SFTP-Deploy-Action@v1.0
+        uses: wlixcc/SFTP-Deploy-Action@master
         with:
           username: '${{ secrets.CI_USER }}'
           server: '${{ secrets.SERVER_IP }}'
