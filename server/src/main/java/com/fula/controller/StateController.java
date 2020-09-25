@@ -1,5 +1,6 @@
 package com.fula.controller;
 
+import com.fula.component.AutoCheckInComponent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,5 +23,13 @@ public class StateController {
         String msg = String.format("system has bean started at %d", FULA_START_TIME);
         logger.info(msg);
         return msg;
+    }
+
+    @GetMapping("/glados/checkin")
+    public String gladosCheckin() {
+        logger.info("================= glados check in start ===============");
+        AutoCheckInComponent.GLADOSCheckIn();
+        logger.info("================= glados check in end ===============");
+        return "success";
     }
 }
