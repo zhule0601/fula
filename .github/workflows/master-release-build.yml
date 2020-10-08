@@ -26,13 +26,13 @@ jobs:
 
 
       - name: deploy file to server
-        uses: wlixcc/SFTP-Deploy-Action@v1.0
+        uses: wlixcc/SFTP-Deploy-Action@master
         with:
           username: '${{ secrets.CI_USER }}'
           server: '${{ secrets.SERVER_IP }}'
           ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
           local_path: './target/*.tar.gz'
-          remote_path: '/home/github/'
+          remote_path: '/opt/build/'
 
 
 

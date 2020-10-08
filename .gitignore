@@ -10,3 +10,4 @@
 /target/
 /server/target/*
 /note/target/*
+/server/log/fula.log.*

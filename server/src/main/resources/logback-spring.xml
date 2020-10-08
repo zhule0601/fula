@@ -18,7 +18,7 @@
         </encoder>
     </appender>
 
-    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <!--<appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <fileNamePattern>server/log/fula.log.%d{yyyy-MM-dd}</fileNamePattern>
             <maxHistory>30</maxHistory>
@@ -26,7 +26,7 @@
         <encoder>
             <pattern>${FILE_LOG_PATTERN}</pattern>
         </encoder>
-    </appender>
+    </appender>-->
 
     <root level="INFO">
         <appender-ref ref="STDOUT"/>

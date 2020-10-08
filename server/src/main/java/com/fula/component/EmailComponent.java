@@ -17,11 +17,11 @@ public class EmailComponent {
     public static final Logger logger = LoggerFactory.getLogger(EmailComponent.class);
 
     private boolean debug;
-    @Value("${from.email}")
+    @Value("${email.from}")
     private String fromEmail;
-    @Value("${from.email.auth.code}")
+    @Value("${email.from.auth.code}")
     private String fromEmailAuthCode;
-    @Value("${to.email}")
+    @Value("${email.default.to}")
     private String toEmail;
 
     public static String defaultToEmail;
