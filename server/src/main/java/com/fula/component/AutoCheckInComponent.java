@@ -8,6 +8,9 @@ import java.util.List;
 
 public class AutoCheckInComponent {
 
+    public static final String BIN_DIR = System.getProperty("app.bin");
+
+
 //    public static final String GLADOS_CHECKIN_COMMAND = "curl 'https://glados.rocks/api/user/checkin' \\\n" +
 //            "  -H 'authority: glados.rocks' \\\n" +
 //            "  -H 'accept: application/json, text/plain, */*' \\\n" +
@@ -24,13 +27,14 @@ public class AutoCheckInComponent {
 //            "  --data-binary '{}' \\\n" +
 //            "  --compressed ";
 
-    public static final String GLADOS_CHECKIN_COMMAND = "/root/tg.sh";
+    public static final String GLADOS_CHECKIN_COMMAND = BIN_DIR + "/cron/tg.sh";
 
-    public static void GLADOSCheckIn(){
+    public static void GLADOSCheckIn() {
         List<String> cmd = new ArrayList<>();
         cmd.add("/bin/bash");
         cmd.add("-c");
-        cmd.add(GLADOS_CHECKIN_COMMAND);
+        String command = String.format("%s %s %s %s", GLADOS_CHECKIN_COMMAND, "msg", "glados_network", "/checkin");
+        cmd.add(command);
         ProcessExecuteUtil.exec(cmd);
     }
 }

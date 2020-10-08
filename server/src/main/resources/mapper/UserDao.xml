@@ -18,6 +18,11 @@
     from user
     where id = #{id,jdbcType=BIGINT}
   </select>
+  <select id="userList" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from user
+  </select>
   <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
     delete from user
     where id = #{id,jdbcType=BIGINT}
