@@ -34,6 +34,14 @@ jobs:
           local_path: './target/*.tar.gz'
           remote_path: '/opt/build/'
 
+      - name: auto upgrade server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.CI_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          script: /opt/build/upgrade.sh
 
 
 # This workflow will build a Java project with Maven
