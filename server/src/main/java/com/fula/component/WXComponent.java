@@ -65,6 +65,9 @@ public class WXComponent {
         return (wxMessage, context, wxMpService1, sessionManager) -> {
             WxMpXmlOutTextMessage out = null;
             String defaultMsg = "暂不支持的消息类型";
+            if (wxMessage.getMsgType().equals("text")) {
+                defaultMsg = wxMessage.getContent();
+            }
             out = WxMpXmlOutMessage.TEXT().content(defaultMsg)
                     .fromUser(wxMessage.getToUser()).toUser(wxMessage.getFromUser())
                     .build();
