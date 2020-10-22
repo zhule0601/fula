@@ -6,9 +6,9 @@ name: FEATURE RELEASE BUILD WITH MAVEN
 on:
   workflow_dispatch:
   push:
-    branchs:
+    branches:
       - 'release*'
-      - 'master'
+      - '!master'
 
 jobs:
   build:
