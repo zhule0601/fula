@@ -21,8 +21,12 @@
             <fileMode>0644</fileMode>
         </fileSet>
         <fileSet>
-            <directory>note/post</directory>
-            <outputDirectory>doc</outputDirectory>
+            <directory>note/</directory>
+            <outputDirectory>note</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>docker/</directory>
+            <outputDirectory>docker</outputDirectory>
         </fileSet>
         <fileSet>
             <directory>server/log</directory>
