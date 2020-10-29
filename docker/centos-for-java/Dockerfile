@@ -3,8 +3,6 @@ FROM centos:7
 ENV TZ=Asia/Shanghai
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
-RUN yum install -y wget vim git
-
 # 配置环境变量
 ENV rootDir=/opt
 ENV JAVA_HOME=$rootDir/java
@@ -19,9 +17,7 @@ RUN mkdir -p $JAVA_HOME \
 
 
 # 安装 wget vim git
-RUN    yum install -y wget \
-    && yum install -y vim \
-    && yum install -y git 
+RUN yum install -y wget vim git
 
 # 安装 jdk8 
 RUN    wget --no-cookies --no-check-certificate --header \
