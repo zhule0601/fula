@@ -22,29 +22,32 @@ public class WXComponent {
 
     private static WxMpService wxMpService;
     private static WxMpMessageRouter wxMpMessageRouter;
-
-    @Value("${wx.appId}")
+    @Value("${wx.enable:false}")
+    private boolean enableWX;
+    @Value("${wx.appId:fake}")
     private String appId;
-    @Value("${wx.token}")
+    @Value("${wx.token:fake}")
     private String token;
-    @Value("${wx.secret}")
+    @Value("${wx.secret:fake}")
     private String secret;
-    @Value("${wx.aesKey}")
+    @Value("${wx.aesKey:fake}")
     private String aesKey;
 
     @PostConstruct
     public void init(){
-        WxMpDefaultConfigImpl config = new WxMpDefaultConfigImpl();
-        config.setAppId(appId); // 设置微信公众号的appid
-        config.setSecret(secret); // 设置微信公众号的app corpSecret
-        config.setToken(token); // 设置微信公众号的token
-        config.setAesKey(aesKey); // 设置微信公众号的EncodingAESKey
-        wxMpService = new WxMpServiceImpl();
-        wxMpService.setWxMpConfigStorage(config);
-        wxMpMessageRouter = new WxMpMessageRouter(WXComponent.getWxMpService());
-        wxMpMessageRouter
-                .rule().async(false).rContent("bilibili").handler(getBilibiliHandler()).end()
-                .rule().async(false).handler(getTextHandler()).end();
+        if (enableWX) {
+            WxMpDefaultConfigImpl config = new WxMpDefaultConfigImpl();
+            config.setAppId(appId); // 设置微信公众号的appid
+            config.setSecret(secret); // 设置微信公众号的app corpSecret
+            config.setToken(token); // 设置微信公众号的token
+            config.setAesKey(aesKey); // 设置微信公众号的EncodingAESKey
+            wxMpService = new WxMpServiceImpl();
+            wxMpService.setWxMpConfigStorage(config);
+            wxMpMessageRouter = new WxMpMessageRouter(WXComponent.getWxMpService());
+            wxMpMessageRouter
+                    .rule().async(false).rContent("bilibili").handler(getBilibiliHandler()).end()
+                    .rule().async(false).handler(getTextHandler()).end();
+        }
     }
 
     public static WxMpService getWxMpService() {

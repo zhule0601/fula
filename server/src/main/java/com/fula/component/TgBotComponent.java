@@ -15,11 +15,13 @@ import javax.annotation.PostConstruct;
 @Component
 public class TgBotComponent {
 
-    @Value("${bot.real.name}")
+    @Value("${bot.enable:false}")
+    private boolean enableBot;
+    @Value("${bot.real.name:fake}")
     private String botName;
-    @Value("${bot.token}")
+    @Value("${bot.token:fake}")
     private String botToken;
-    @Value("${bot.enable.proxy}")
+    @Value("${bot.enable.proxy:false}")
     private boolean enableProxy;
     private static final String PROXY_HOST = "127.0.0.1";
     private static final int PROXY_PORT = 7890;
@@ -29,18 +31,20 @@ public class TgBotComponent {
 
     @PostConstruct
     public void init() throws TelegramApiRequestException {
-        ApiContextInitializer.init();
-        // Set up Http proxy
-        DefaultBotOptions botOptions = ApiContext.getInstance(DefaultBotOptions.class);
-        if (enableProxy) {
-            botOptions.setProxyHost(PROXY_HOST);
-            botOptions.setProxyPort(PROXY_PORT);
-            // Select proxy type: [HTTP|SOCKS4|SOCKS5] (default: NO_PROXY)
-            botOptions.setProxyType(DefaultBotOptions.ProxyType.SOCKS5);
+        if (enableBot) {
+            ApiContextInitializer.init();
+            // Set up Http proxy
+            DefaultBotOptions botOptions = ApiContext.getInstance(DefaultBotOptions.class);
+            if (enableProxy) {
+                botOptions.setProxyHost(PROXY_HOST);
+                botOptions.setProxyPort(PROXY_PORT);
+                // Select proxy type: [HTTP|SOCKS4|SOCKS5] (default: NO_PROXY)
+                botOptions.setProxyType(DefaultBotOptions.ProxyType.SOCKS5);
+            }
+            // Register your newly created AbilityBot
+            FulaBot fulaBot = new FulaBot(botToken, botName, botOptions);
+            telegramBotsApi = new TelegramBotsApi();
+            telegramBotsApi.registerBot(fulaBot);
         }
-        // Register your newly created AbilityBot
-        FulaBot fulaBot = new FulaBot(botToken, botName, botOptions);
-        telegramBotsApi = new TelegramBotsApi();
-        telegramBotsApi.registerBot(fulaBot);
     }
 }
