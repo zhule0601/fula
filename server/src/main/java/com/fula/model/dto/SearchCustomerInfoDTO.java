@@ -4,7 +4,7 @@ package com.fula.model.dto;
  * 用户注册 dto
  * @author 
  */
-public class RegisterCustomerInfoDTO {
+public class SearchCustomerInfoDTO {
 
     private String name;
 
@@ -58,7 +58,7 @@ public class RegisterCustomerInfoDTO {
 
     @Override
     public String toString() {
-        return "RegisterCustomerInfoDTO{" +
+        return "SearchCustomerInfoDTO{" +
                 "name='" + name + '\'' +
                 ", phone='" + phone + '\'' +
                 ", email='" + email + '\'' +

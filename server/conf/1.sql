@@ -9,8 +9,11 @@ CREATE TABLE customer_info
     email         VARCHAR(50) COMMENT '邮箱',
     sex           INT(1) COMMENT '性别:0-女,1-男',
     gmt_create    TIMESTAMP                          NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    modified_time TIMESTAMP                          NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最后修改时间',
-    PRIMARY KEY pk_customer_info_id (id)
+    gmt_modified TIMESTAMP                          NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最后修改时间',
+    PRIMARY KEY pk_customer_info_id (id),
+    UNIQUE KEY uk_name (name),
+    UNIQUE KEY uk_phone (phone),
+    UNIQUE KEY uk_email (email)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8
   ROW_FORMAT = COMPACT COMMENT '用户信息表';
@@ -21,9 +24,10 @@ CREATE TABLE customer_login
     customer_info_id BIGINT(20) COMMENT '用户ID',
     login_name       VARCHAR(20) NOT NULL COMMENT '用户名',
     password         CHAR(32)    NOT NULL COMMENT 'md5加密的密码',
-    state            INT(1) NOT NULL DEFAULT 1 COMMENT '用户状态,1-正常',
+    state            INT(1)      NOT NULL DEFAULT 1 COMMENT '用户状态,1-正常',
     gmt_create       TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    gmt_modified     TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最后修改时间'
+    gmt_modified     TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最后修改时间',
+    UNIQUE KEY uk_id_name (customer_info_id, login_name)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8
   ROW_FORMAT = COMPACT COMMENT '用户登录表';
@@ -49,7 +53,7 @@ CREATE TABLE `sys_role`
     role_name_cn varchar(20)                                 DEFAULT NULL COMMENT '角色中文名',
     gmt_create   TIMESTAMP                          NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     gmt_modified TIMESTAMP                          NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最后修改时间',
-    state        INT(1)                                 DEFAULT '1' COMMENT '是否有效  0无效 1有效  ',
+    state        INT(1)                                      DEFAULT '1' COMMENT '是否有效  0无效 1有效  ',
     PRIMARY KEY (`id`)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8
@@ -75,7 +79,7 @@ CREATE TABLE `sys_role_permission`
     permission_id BIGINT(20)                                  DEFAULT NULL COMMENT '权限id',
     gmt_create    TIMESTAMP                          NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     gmt_modified  TIMESTAMP                          NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最后修改时间',
-    state         INT(1)                                 DEFAULT '1' COMMENT '是否有效: 0无效 1有效 ',
+    state         INT(1)                                      DEFAULT '1' COMMENT '是否有效: 0无效 1有效 ',
     PRIMARY KEY (`id`)
 ) ENGINE = InnoDB
   AUTO_INCREMENT = 5

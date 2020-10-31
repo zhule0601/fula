@@ -5,6 +5,7 @@ import com.fula.mapper.CustomerLoginDao;
 import com.fula.model.CustomerInfo;
 import com.fula.model.CustomerLogin;
 import com.fula.model.dto.RegisterCustomerInfoDTO;
+import com.fula.model.dto.SearchCustomerInfoDTO;
 import com.fula.service.CustomerService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,6 +13,10 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 public class CustomerServiceImpl implements CustomerService {
@@ -47,4 +52,17 @@ public class CustomerServiceImpl implements CustomerService {
         return Boolean.TRUE;
     }
 
+    @Override
+    public List<SearchCustomerInfoDTO> search(SearchCustomerInfoDTO searchCustomerInfoDTO) {
+        // 查询基本信息
+        CustomerInfo param = new CustomerInfo();
+        BeanUtils.copyProperties(searchCustomerInfoDTO, param);
+        List<CustomerInfo> customerInfoList = customerInfoDao.selectBySelective(param);
+        List<SearchCustomerInfoDTO> result = customerInfoList.stream().map(cl -> {
+            SearchCustomerInfoDTO temp = new SearchCustomerInfoDTO();
+            BeanUtils.copyProperties(cl, temp);
+            return temp;
+        }).collect(Collectors.toList());
+        return result;
+    }
 }

@@ -4,6 +4,8 @@ import com.fula.model.CustomerInfo;
 import org.apache.ibatis.annotations.Mapper;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 
 @Repository
 @Mapper
@@ -19,4 +21,6 @@ public interface CustomerInfoDao {
     int updateByPrimaryKeySelective(CustomerInfo record);
 
     int updateByPrimaryKey(CustomerInfo record);
+
+    List<CustomerInfo> selectBySelective(CustomerInfo param);
 }

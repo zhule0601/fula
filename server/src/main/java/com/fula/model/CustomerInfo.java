@@ -51,7 +51,7 @@ public class CustomerInfo implements Serializable {
     /**
      * 最后修改时间
      */
-    private Date modifiedTime;
+    private Date gmtModified;
 
     private static final long serialVersionUID = 1L;
 
@@ -119,11 +119,11 @@ public class CustomerInfo implements Serializable {
         this.gmtCreate = gmtCreate;
     }
 
-    public Date getModifiedTime() {
-        return modifiedTime;
+    public Date getGmtModified() {
+        return gmtModified;
     }
 
-    public void setModifiedTime(Date modifiedTime) {
-        this.modifiedTime = modifiedTime;
+    public void setGmtModified(Date gmtModified) {
+        this.gmtModified = gmtModified;
     }
 }
