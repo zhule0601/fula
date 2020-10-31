@@ -1,6 +1,6 @@
 package com.fula.controller;
 
-import com.fula.mapper.system.ResultBody;
+import com.fula.model.system.ResultBody;
 import com.fula.model.User;
 import com.fula.service.UserService;
 import org.slf4j.Logger;
