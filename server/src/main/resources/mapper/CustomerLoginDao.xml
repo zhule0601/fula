@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fula.mapper.CustomerLoginDao">
+  <resultMap id="BaseResultMap" type="com.fula.model.CustomerLogin">
+    <result column="customer_info_id" jdbcType="BIGINT" property="customerInfoId" />
+    <result column="login_name" jdbcType="VARCHAR" property="loginName" />
+    <result column="password" jdbcType="CHAR" property="password" />
+    <result column="state" jdbcType="INTEGER" property="state" />
+    <result column="gmt_create" jdbcType="TIMESTAMP" property="gmtCreate" />
+    <result column="gmt_modified" jdbcType="TIMESTAMP" property="gmtModified" />
+  </resultMap>
+  <insert id="insert" parameterType="com.fula.model.CustomerLogin">
+    insert into customer_login (customer_info_id, login_name, `password`, `state`
+      )
+    values (#{customerInfoId,jdbcType=BIGINT}, #{loginName,jdbcType=VARCHAR}, #{password,jdbcType=CHAR}, 
+      #{state,jdbcType=INTEGER}
+      )
+  </insert>
+  <insert id="insertSelective" parameterType="com.fula.model.CustomerLogin">
+    insert into customer_login
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="customerInfoId != null">
+        customer_info_id,
+      </if>
+      <if test="loginName != null">
+        login_name,
+      </if>
+      <if test="password != null">
+        `password`,
+      </if>
+      <if test="state != null">
+        `state`,
+      </if>
+      <if test="gmtCreate != null">
+        gmt_create,
+      </if>
+      <if test="gmtModified != null">
+        gmt_modified,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="customerInfoId != null">
+        #{customerInfoId,jdbcType=BIGINT},
+      </if>
+      <if test="loginName != null">
+        #{loginName,jdbcType=VARCHAR},
+      </if>
+      <if test="password != null">
+        #{password,jdbcType=CHAR},
+      </if>
+      <if test="state != null">
+        #{state,jdbcType=INTEGER},
+      </if>
+      <if test="gmtCreate != null">
+        #{gmtCreate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="gmtModified != null">
+        #{gmtModified,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+</mapper>
