@@ -30,3 +30,15 @@
 - centos-for-java
 - mysql-backup
 - tg-client
+
+
+## 工具
+
+- idea plugins
+    - [maven-helper](https://plugins.jetbrains.com/plugin/7179-maven-helper) **依赖冲突检查**
+    - [request-mapper](https://plugins.jetbrains.com/plugin/9567-request-mapper) **快速查找 controller url**
+    - [restfultoolkit](https://plugins.jetbrains.com/plugin/10292-restfultoolkit) **快速测试 controller uri**
+    - [translation](https://plugins.jetbrains.com/plugin/8579-translation) **翻译**
+    - [free-mybatis-plugin](https://plugins.jetbrains.com/plugin/8321-free-mybatis-plugin) **代码生成, xml 跳转**
+
+- server.http
