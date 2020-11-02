@@ -16,20 +16,24 @@ public class EmailComponent {
 
     public static final Logger logger = LoggerFactory.getLogger(EmailComponent.class);
 
-    private boolean debug;
-    @Value("${email.from}")
+    @Value("${email.enable:false}")
+    private boolean enableEmail;
+    @Value("${email.from:fake}")
     private String fromEmail;
-    @Value("${email.from.auth.code}")
+    @Value("${email.from.auth.code:fake}")
     private String fromEmailAuthCode;
-    @Value("${email.default.to}")
+    @Value("${email.default.to:fake}")
     private String toEmail;
 
+    private boolean debug;
     public static String defaultToEmail;
 
     @PostConstruct
     public void init() {
-        OhMyEmail.config(SMTP_163(debug), fromEmail, fromEmailAuthCode);
-        defaultToEmail = toEmail;
+        if (enableEmail) {
+            OhMyEmail.config(SMTP_163(debug), fromEmail, fromEmailAuthCode);
+            defaultToEmail = toEmail;
+        }
     }
 
     public static void sendText(String subject, String content) {

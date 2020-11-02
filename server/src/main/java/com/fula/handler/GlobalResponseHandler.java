@@ -1,9 +1,9 @@
 package com.fula.handler;
 
 
-import com.fula.mapper.system.FulaError;
-import com.fula.mapper.system.FulaException;
-import com.fula.mapper.system.ResultBody;
+import com.fula.model.system.FulaError;
+import com.fula.model.system.FulaException;
+import com.fula.model.system.ResultBody;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;

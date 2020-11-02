@@ -1,4 +1,4 @@
-package com.fula.mapper.system;
+package com.fula.model.system;
 
 public enum FulaError {
 

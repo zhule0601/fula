@@ -1,10 +1,16 @@
 GET http://localhost:80/state
 Accept: application/json
 
-###
-POST http://localhost:80/user/wx
-Content-Type: application/x-www-form-urlencoded
+### 注册用户
+POST http://{{host}}:{{port}}/customer/register
+Content-Type: application/json
 
-wxId=123
+{
+  "name": "demoData",
+  "phone": "demoData",
+  "email": "demoData",
+  "sex": 1,
+  "password": "demoData"
+}
 
-###
+### RestfulToolkit idea plugin
