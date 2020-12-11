@@ -37,6 +37,15 @@ jobs:
           local_path: './target/*.tar.gz'
           remote_path: '/opt/build/'
 
+      - name: deploy file to server
+          uses: wlixcc/SFTP-Deploy-Action@master
+          with:
+            username: '${{ secrets.CI_USER }}'
+            server: '${{ secrets.SERVER_IP }}'
+            ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
+            local_path: './server/bin/auto/auto-upgrade-fula.sh'
+            remote_path: '/opt/build/'
+
       - name: auto upgrade server
         uses: appleboy/ssh-action@master
         with:
@@ -44,6 +53,6 @@ jobs:
           username: ${{ secrets.CI_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
-          script: /opt/build/upgrade.sh
+          script: chmod o+x /opt/build/upgrade.sh && /opt/build/auto-upgrade-fula.sh
 
 
