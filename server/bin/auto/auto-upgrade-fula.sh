@@ -14,3 +14,6 @@ tar -zvxf "$base_dir"/"$tar_name" -C "$base_dir"
 \cp /opt/build/application.properties "$base_dir"/"$fula_name"/conf/
 
 exec "$base_dir"/"$fula_name"/bin/fula-server.sh restart
+
+# 已经存在则覆盖
+ln -snf "$base_dir"/"$fula_name" /root/current
