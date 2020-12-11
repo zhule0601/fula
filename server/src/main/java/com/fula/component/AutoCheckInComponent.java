@@ -33,7 +33,7 @@ public class AutoCheckInComponent {
         List<String> cmd = new ArrayList<>();
         cmd.add("/bin/bash");
         cmd.add("-c");
-        String command = String.format("%s %s %s %s", GLADOS_CHECKIN_COMMAND, "msg", "glados_network", "/checkin");
+        String command = String.format("%s %s %s %s", GLADOS_CHECKIN_COMMAND, "msg", "glados_core_bot", "/checkin");
         cmd.add(command);
         ProcessExecuteUtil.exec(cmd);
     }
