@@ -8,20 +8,19 @@ telegram client for centOS,基于开源项目 [vysheng/tg](http://github.com/vys
 
 ### 快速启动容器
 ```text
-docker run -itd zhule/tg-client /bin/bash
+docker run -itd --name telegram zhule/tg-client /bin/bash
 ```
 ### 进入容器并登录账号
 ```text
-docker exec -it ${容器id} bash
+docker exec -it telegram bash
 
 1. telegram-cli
-2. 按两次`tab`键
-3. 输入手机号 eg: +86 188xxxxxxxx
-4. 输入验证码登录
+2. 输入手机号 eg: +86 188xxxxxxxx
+3. 输入验证码登录
 ```
 ### 调用脚本发送消息
 ```text
-docker exec ${容器id} /bin/bash -c "tg msg ${@目标用户名} ${消息}"
+docker exec telegram /bin/bash -c "tg msg ${@目标用户名} ${消息}"
 ```
 
 
