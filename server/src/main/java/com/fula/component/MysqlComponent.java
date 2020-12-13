@@ -11,7 +11,7 @@ public class MysqlComponent {
     public static final String BIN_DIR = System.getProperty("app.bin");
     public static final String VAR_DIR = System.getProperty("java.io.tmpdir");
     public static final String BACKUP_DIR = VAR_DIR + "/backup";
-    public static final String MYSQL_DUMP_COMMAND = BIN_DIR + "/mysql/appctl.sh";
+    public static final String MYSQL_DUMP_COMMAND = BIN_DIR + "/cron/mysql-backup.sh";
     public static final String MYSQL_SEND_COMMAND = BIN_DIR + "/cron/tg.sh";
     public static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMddhhmmss");
 
