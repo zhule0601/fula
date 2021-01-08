@@ -1,6 +1,6 @@
-package com.fula.component;
+package com.fula.demo.component;
 
-import com.fula.util.JsonUtils;
+import com.fula.demo.uitl.JsonUtils;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;

@@ -1,6 +1,6 @@
-package com.fula.component;
+package com.fula.demo.component;
 
-import com.fula.util.JsonUtils;
+import com.fula.demo.uitl.JsonUtils;
 import com.google.common.collect.ImmutableList;
 import kafka.zk.KafkaZkClient;
 import org.apache.kafka.clients.CommonClientConfigs;

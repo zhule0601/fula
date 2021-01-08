@@ -21,6 +21,7 @@
     <modules>
         <module>note</module>
         <module>server</module>
+        <module>demo</module>
     </modules>
 
     <build>
