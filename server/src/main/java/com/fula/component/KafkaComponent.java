@@ -5,9 +5,7 @@ import com.google.common.collect.ImmutableList;
 import kafka.zk.KafkaZkClient;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.admin.*;
-import org.apache.kafka.clients.consumer.ConsumerConfig;
-import org.apache.kafka.clients.consumer.KafkaConsumer;
-import org.apache.kafka.clients.consumer.OffsetAndMetadata;
+import org.apache.kafka.clients.consumer.*;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.security.JaasUtils;
 import org.apache.kafka.common.serialization.StringDeserializer;
@@ -18,6 +16,7 @@ import org.testng.annotations.Test;
 import scala.collection.JavaConversions;
 import scala.collection.Seq;
 
+import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -66,6 +65,48 @@ public class KafkaComponent {
       topics = JavaConversions.seqAsJavaList(subBrokerTopicsPaths);
     }
     System.out.println(topics);
+  }
+
+  // list topic by adminClient
+  @Test
+  public void listTopic() throws Exception {
+    ListTopicsResult listTopicsResult = adminClient.listTopics();
+    Set<String> topics = listTopicsResult.names().get();
+    System.out.println(JsonUtils.objectToJson(topics));
+  }
+
+  // create Topic
+  @Test
+  public void createTopic() throws Exception {
+    NewTopic newTopic = new NewTopic(topic, 1, (short) 1);
+    CreateTopicsResult result = adminClient.createTopics(ImmutableList.of(newTopic));
+    result.all().get();
+  }
+
+  // delete topic
+  @Test
+  public void deleteTopic() throws Exception {
+    DeleteTopicsResult result = adminClient.deleteTopics(ImmutableList.of(topic));
+    result.all().get();
+  }
+
+  // 消费 topic 内消息
+  @Test
+  public void consumerMessage() {
+    Properties props = new Properties();
+    props.setProperty("bootstrap.servers", BOOTSTRAP_SERVERS);
+    props.setProperty("group.id", "zhule_test");
+    props.setProperty("enable.auto.commit", "true");
+    props.setProperty("auto.commit.interval.ms", "1000");
+    props.setProperty("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
+    props.setProperty("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
+    KafkaConsumer<String, String> consumer = new KafkaConsumer<>(props);
+    consumer.subscribe(ImmutableList.of(topic));
+    while (true) {
+      ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(100));
+      for (ConsumerRecord<String, String> record : records)
+        System.out.printf("offset = %d, key = %s, value = %s%n", record.offset(), record.key(), record.value());
+    }
   }
 
   @Test
