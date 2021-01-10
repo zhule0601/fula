@@ -8,12 +8,12 @@ import org.springframework.stereotype.Component;
 @Component
 public class Scheduler {
 
-    @Scheduled(cron = "0 32 7 * * ?")
+    @Scheduled(cron = "${glados.checkin.cron}")
     public void GLADOSCheckIn(){
         AutoCheckInComponent.GLADOSCheckIn();
     }
 
-    @Scheduled(cron = "0 35 7 * * ?")
+    @Scheduled(cron = "${mysql.backup.cron}")
     public void MysqlDUMP(){
         MysqlComponent.backupMysql2TG();
     }
