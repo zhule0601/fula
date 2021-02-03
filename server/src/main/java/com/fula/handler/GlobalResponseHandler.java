@@ -31,9 +31,10 @@ public class GlobalResponseHandler {
     stopWatch.start();
     try {
       MethodSignature methodSignature = (MethodSignature) proceedingJoinPoint.getSignature();
+      methodName = methodSignature.getMethod().getName();
       logger.info(
           "##Invoke begin. method:[{}],param:[{}],values:[{}]",
-          methodSignature.getMethod().getName(),
+          methodName,
           Arrays.toString(methodSignature.getParameterNames()),
           Arrays.toString(proceedingJoinPoint.getArgs()));
       result = proceedingJoinPoint.proceed();
