@@ -15,17 +15,17 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/customer")
+@RequestMapping("/customer/v1")
 public class CustomerController {
 
-    private static final Logger logger = LoggerFactory.getLogger(CustomerController.class);
+    private final CustomerService customerService;
 
-    @Autowired
-    CustomerService customerService;
+    public CustomerController(CustomerService customerService) {
+        this.customerService = customerService;
+    }
 
     @PostMapping("/register")
     public ResultBody<Boolean> register(@RequestBody RegisterCustomerInfoDTO registerCustomerInfoDTO) {
-        // todo 注册前的检查工作(参数, uk等)
         Boolean result = customerService.register(registerCustomerInfoDTO);
         return new ResultBody<>(result);
     }
