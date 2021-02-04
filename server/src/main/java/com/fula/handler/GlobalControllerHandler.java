@@ -19,9 +19,9 @@ import java.util.Arrays;
 @Component
 @Order(1)
 @Aspect
-public class GlobalResponseHandler {
+public class GlobalControllerHandler {
 
-  private static final Logger logger = LoggerFactory.getLogger(GlobalResponseHandler.class);
+  private static final Logger logger = LoggerFactory.getLogger(GlobalControllerHandler.class);
 
   @Around("execution(* com.fula.controller..*.*(..))")
   public Object aroundForController(ProceedingJoinPoint proceedingJoinPoint) {
