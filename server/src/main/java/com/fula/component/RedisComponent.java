@@ -23,7 +23,7 @@ public class RedisComponent {
     config.setMaxWaitMillis(10000);
     config.setTestOnBorrow(true);
     config.setTestOnReturn(true);
-    jedisPool = new JedisPool(new JedisPoolConfig(), "47.90.122.0", 6379);
+    jedisPool = new JedisPool(new JedisPoolConfig(), "xxx", 6379);
     Jedis jedis = jedisPool.getResource();
     jedis.set("iphone", "100");
     jedis.close();
