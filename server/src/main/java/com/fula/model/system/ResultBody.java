@@ -1,46 +1,27 @@
 package com.fula.model.system;
 
+import com.fula.interceptor.MDCInterceptor;
+import lombok.Data;
+import org.slf4j.MDC;
+
+@Data
 public class ResultBody<T> {
 
-    public static final String SUCCESS_CODE = "0000";
-    public static final String SUCCESS_MESSAGE = "SUCCESS";
+  public static final String SUCCESS_CODE = "0000";
+  public static final String SUCCESS_MESSAGE = "SUCCESS";
 
-    private String code = SUCCESS_CODE;
+  private String code = SUCCESS_CODE;
+  private String message = SUCCESS_MESSAGE;
+  private String requestId;
 
-    private String message = SUCCESS_MESSAGE;
+  private T result;
 
-    private String requestId;
+  public ResultBody() {
+    requestId = MDC.get(MDCInterceptor.REQUEST_ID);
+  }
 
-    private T result;
-
-    public ResultBody() {
-    }
-
-    public ResultBody(T result) {
-        this.result = result;
-    }
-
-    public String getCode() {
-        return code;
-    }
-
-    public void setCode(String code) {
-        this.code = code;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
-    }
-
-    public T getResult() {
-        return result;
-    }
-
-    public void setResult(T result) {
-        this.result = result;
-    }
+  public ResultBody(T result) {
+    requestId = MDC.get(MDCInterceptor.REQUEST_ID);
+    this.result = result;
+  }
 }
