@@ -114,6 +114,12 @@
             <artifactId>kafka-clients</artifactId>
             <version>2.0.0</version>
         </dependency>
+        <!-- jedis -->
+        <dependency>
+            <groupId>redis.clients</groupId>
+            <artifactId>jedis</artifactId>
+            <version>2.9.0</version>
+        </dependency>
 
         <!--常用工具类-->
         <dependency>
