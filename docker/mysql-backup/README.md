@@ -22,3 +22,9 @@ docker exec ${容器id} /bin/bash -c "mysql-backup"
 ```text
 docker exec ${容器id} /bin/bash -c "mysql-restore ${备份 sql 的绝对路径}"
 ```
+
+### docker cp
+docker cp /root/current/var/backup/20210613073500 ${containerId}:/opt/backup
+
+### mysql connection 
+mysql -h 127.0.0.1 -u ${user} -p${password} -P ${port}
