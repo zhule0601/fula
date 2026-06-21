@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>数字小游戏</title>
+  <style>
+    /* ============================================================
+       色板 / 字体 token
+       ============================================================ */
+    :root {
+      --sky-top: #FFE85C;
+      --sky-mid: #FFD074;
+      --sky-bot: #7DD3FC;
+      --sun:     #FFF59D;
+
+      --sea-1:   #22D3EE;
+      --sea-2:   #0EA5E9;
+      --sea-3:   #0369A1;
+      --sand:    #FDE68A;
+
+      --series-pawpatrol: #2563EB;
+      --series-zootopia:  #16A34A;
+      --series-peppa:     #EC4899;
+
+      --action:        #FB7185;
+      --action-shadow: #9F1239;
+      --good:          #84CC16;
+      --good-shadow:   #4D7C0F;
+
+      --ink:           #1E293B;
+      --ink-soft:      #475569;
+      --card:          #FFFFFF;
+    }
+
+    /* ============================================================
+       全局
+       ============================================================ */
+    * { box-sizing: border-box; }
+    html, body { margin: 0; height: 100%; overflow: hidden; }
+    body {
+      font-family: "Chalkboard SE", "Marker Felt", "PingFang SC", -apple-system, sans-serif;
+      color: var(--ink);
+      user-select: none; -webkit-user-select: none;
+      cursor: default;
+    }
+
+    /* ============================================================
+       舞台 + 背景层
+       ============================================================ */
+    #stage {
+      position: fixed; inset: 0;
+      background: linear-gradient(to bottom,
+        var(--sky-top) 0%,
+        var(--sky-mid) 35%,
+        var(--sky-bot) 100%);
+      overflow: hidden;
+    }
+
+    /* 太阳：右上角大半透圆 */
+    .sun {
+      position: absolute; top: -80px; right: -80px;
+      width: 360px; height: 360px;
+      background: radial-gradient(circle, var(--sun) 0%, rgba(255,245,157,0.5) 40%, transparent 70%);
+      pointer-events: none; z-index: 1;
+    }
+
+    /* 飘云：CSS-only 圆形组合 */
+    .cloud {
+      position: absolute;
+      background: white; border-radius: 100px;
+      opacity: 0.85; pointer-events: none; z-index: 2;
+      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.05));
+      animation: cloudDrift linear infinite;
+    }
+    .cloud::before, .cloud::after {
+      content: ''; position: absolute;
+      background: white; border-radius: 100px;
+    }
+    .cloud.c1 { width: 160px; height: 36px; top: 12%; left: -180px; animation-duration: 80s; }
+    .cloud.c1::before { width: 70px; height: 56px; top: -28px; left: 28px; }
+    .cloud.c1::after  { width: 50px; height: 44px; top: -20px; left: 90px; }
+    .cloud.c2 { width: 120px; height: 28px; top: 24%; left: -140px; animation-duration: 110s; animation-delay: -40s; }
+    .cloud.c2::before { width: 50px; height: 40px; top: -20px; left: 24px; }
+    .cloud.c3 { width: 140px; height: 32px; top: 8%; left: -160px; animation-duration: 95s; animation-delay: -70s; }
+    .cloud.c3::before { width: 60px; height: 48px; top: -24px; left: 32px; }
+    .cloud.c3::after  { width: 44px; height: 36px; top: -16px; left: 84px; }
+    @keyframes cloudDrift {
+      from { transform: translateX(0); }
+      to   { transform: translateX(calc(100vw + 200px)); }
+    }
+
+    /* 多层波浪 —— 用 SVG 路径，叠在底部 */
+    .waves {
+      position: absolute; left: 0; right: 0; bottom: 0;
+      width: 100%; height: 38%; pointer-events: none; z-index: 3;
+    }
+    .waves svg {
+      position: absolute; left: 0; bottom: 0; width: 100%;
+      animation: waveSway 6s ease-in-out infinite;
+    }
+    .waves svg.w1 { height: 40%; opacity: 0.55; animation-delay: -2s; }
+    .waves svg.w2 { height: 55%; opacity: 0.75; animation-delay: -4s; }
+    .waves svg.w3 { height: 80%; opacity: 1; }
+    @keyframes waveSway {
+      0%, 100% { transform: translateX(-8px); }
+      50%      { transform: translateX(8px); }
+    }
+
+    /* 沙滩薄条 */
+    .sand-strip {
+      position: absolute; left: 0; right: 0; bottom: 0;
+      height: 14px; background: var(--sand);
+      box-shadow: 0 -2px 6px rgba(0,0,0,0.1);
+      z-index: 4;
+    }
+
+    /* ============================================================
+       HUD —— 左上浮动星牌
+       ============================================================ */
+    #hud {
+      position: absolute; top: 24px; left: 24px;
+      background: var(--card);
+      border: 4px solid var(--ink);
+      border-radius: 28px;
+      padding: 14px 22px;
+      box-shadow: 0 8px 0 rgba(30,41,59,0.18);
+      z-index: 100;
+      display: flex; flex-direction: column; gap: 8px;
+      font-weight: 700; font-size: 20px;
+    }
+    #hud .row { display: flex; align-items: center; gap: 10px; }
+    #hud .level-tag {
+      background: var(--action); color: white;
+      padding: 4px 14px; border-radius: 20px;
+      font-size: 20px;
+    }
+    #hud .label { color: var(--ink-soft); font-size: 16px; }
+    #hud .stars  { letter-spacing: 6px; color: #FBBF24; font-size: 26px; }
+    #hud .misses { letter-spacing: 6px; color: #EF4444; font-size: 22px; }
+    #hud .score-num {
+      font-size: 26px; color: var(--action); font-weight: 900;
+      min-width: 36px; display: inline-block; text-align: right;
+    }
+
+    /* 右上控制按钮组 */
+    #controls {
+      position: absolute; top: 24px; right: 24px;
+      display: flex; align-items: center; gap: 12px; z-index: 100;
+    }
+    .ctrl-btn {
+      width: 64px; height: 64px; border-radius: 50%;
+      border: 4px solid var(--ink);
+      background: var(--card); color: var(--ink);
+      font-size: 28px; font-weight: 900;
+      cursor: pointer;
+      box-shadow: 0 6px 0 rgba(30,41,59,0.25);
+      display: flex; align-items: center; justify-content: center;
+      transition: transform 0.08s, box-shadow 0.08s;
+      font-family: inherit;
+    }
+    .ctrl-btn:hover { background: #F8FAFC; }
+    .ctrl-btn:active {
+      transform: translateY(4px);
+      box-shadow: 0 2px 0 rgba(30,41,59,0.25);
+    }
+    .ctrl-btn.off { background: #E2E8F0; color: #94A3B8; }
+
+    /* 音量盒：BGM 开关 + 滑块 */
+    .vol-box {
+      background: var(--card);
+      border: 4px solid var(--ink);
+      border-radius: 40px;
+      padding: 8px 18px 8px 8px;
+      box-shadow: 0 6px 0 rgba(30,41,59,0.25);
+      display: flex; align-items: center; gap: 10px;
+      height: 64px;
+    }
+    .vol-box .icon-btn {
+      width: 44px; height: 44px; border-radius: 50%;
+      border: none; background: transparent;
+      font-size: 22px; cursor: pointer; padding: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-family: inherit;
+    }
+    .vol-box .icon-btn:hover { background: #F1F5F9; }
+    .vol-box input[type=range] {
+      -webkit-appearance: none; appearance: none;
+      width: 110px; height: 8px;
+      background: #CBD5E1; border-radius: 8px;
+      outline: none; cursor: pointer;
+    }
+    .vol-box input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none; appearance: none;
+      width: 22px; height: 22px; border-radius: 50%;
+      background: var(--action);
+      border: 3px solid var(--ink);
+      cursor: pointer;
+    }
+    .vol-box .vol-label { font-size: 16px; font-weight: 700; color: var(--ink-soft); }
+
+    /* ============================================================
+       船 —— 帆 + 船身 + 角色
+       ============================================================ */
+    .ship {
+      position: absolute;
+      width: 240px; height: 300px;
+      pointer-events: none;
+      will-change: transform;
+      z-index: 10;
+    }
+    /* 飘行动画 */
+    .ship.drifting {
+      animation: drift var(--drift-sec, 8s) linear forwards;
+    }
+    @keyframes drift {
+      from { transform: translateX(0); }
+      to   { transform: translateX(var(--travel, -100vw)); }
+    }
+    /* 内层用于上下摆动 */
+    .ship .bob {
+      width: 100%; height: 100%;
+      display: flex; flex-direction: column; align-items: center;
+      animation: bob 2.4s ease-in-out infinite;
+    }
+    @keyframes bob {
+      0%, 100% { transform: translateY(0); }
+      50%      { transform: translateY(-8px); }
+    }
+
+    /* 帆 —— 白色三角，数字写在上面 */
+    .ship .sail {
+      width: 140px; height: 150px;
+      background: white;
+      border: 5px solid var(--ink);
+      clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+      position: relative;
+      display: flex; align-items: center; justify-content: center;
+      filter: drop-shadow(0 4px 0 rgba(30,41,59,0.2));
+    }
+    .ship .digit {
+      font-family: "Chalkboard SE", "Marker Felt", sans-serif;
+      font-size: 84px; font-weight: 900;
+      color: var(--ink);
+      line-height: 1;
+      margin-top: 36px;  /* 推到三角形偏下半部分 */
+    }
+    /* 桅杆 */
+    .ship .mast {
+      width: 5px; height: 16px; background: var(--ink);
+    }
+    /* 角色 —— 站船身里，放大 */
+    .ship .char {
+      width: 150px; height: 150px;
+      background-size: contain; background-repeat: no-repeat;
+      background-position: center bottom;
+      margin-bottom: -16px;
+      filter: drop-shadow(0 4px 5px rgba(0,0,0,0.25));
+    }
+    /* 船身 —— 梯形+圆底，放大 */
+    .ship .hull {
+      width: 220px; height: 70px;
+      background: var(--series-color, var(--series-pawpatrol));
+      border: 5px solid var(--ink);
+      border-radius: 0 0 110px 110px / 0 0 70px 70px;
+      box-shadow: 0 8px 0 rgba(30,41,59,0.18);
+      position: relative;
+    }
+    /* 船身上的小波浪 */
+    .ship .hull::after {
+      content: '';
+      position: absolute; left: 0; right: 0; top: -10px;
+      height: 10px;
+      background: repeating-linear-gradient(90deg,
+        var(--series-color, var(--series-pawpatrol)) 0 10px,
+        transparent 10px 20px);
+    }
+    .ship[data-series="pawpatrol"] { --series-color: var(--series-pawpatrol); }
+    .ship[data-series="zootopia"]  { --series-color: var(--series-zootopia); }
+    .ship[data-series="peppa"]     { --series-color: var(--series-peppa); }
+
+    /* ============================================================
+       命中特效 —— 大粒子 + 五角星
+       ============================================================ */
+    .pop-burst {
+      position: absolute; width: 200px; height: 200px;
+      pointer-events: none; z-index: 50;
+      background: radial-gradient(circle, #FBBF24 0%, var(--action) 50%, transparent 75%);
+      border-radius: 50%;
+      animation: pop 0.5s ease-out forwards;
+    }
+    @keyframes pop {
+      0%   { transform: scale(0.5); opacity: 1; }
+      100% { transform: scale(2.2); opacity: 0; }
+    }
+    .pop-star {
+      position: absolute; font-size: 40px; pointer-events: none; z-index: 51;
+      animation: starOut 0.6s ease-out forwards;
+    }
+    @keyframes starOut {
+      0%   { transform: translate(0, 0) scale(1) rotate(0); opacity: 1; }
+      100% { transform: translate(var(--dx), var(--dy)) scale(0.4) rotate(540deg); opacity: 0; }
+    }
+
+    /* ============================================================
+       覆盖层（升级 / 再来）
+       ============================================================ */
+    .overlay {
+      position: fixed; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      z-index: 200; pointer-events: none;
+      background: rgba(255,255,255,0.6);
+      backdrop-filter: blur(4px);
+    }
+    .overlay .bubble {
+      background: white;
+      border: 6px solid var(--ink);
+      border-radius: 60px;
+      padding: 36px 64px;
+      font-size: 80px; font-weight: 900;
+      color: var(--action);
+      box-shadow: 0 10px 0 rgba(30,41,59,0.2);
+      animation: bubblePop 0.4s cubic-bezier(.34,1.56,.64,1);
+    }
+    @keyframes bubblePop {
+      0%   { transform: scale(0) rotate(-8deg); }
+      100% { transform: scale(1) rotate(0); }
+    }
+
+    /* ============================================================
+       开始屏 + 暂停屏 + 通关屏
+       ============================================================ */
+    .screen {
+      position: fixed; inset: 0;
+      display: none; flex-direction: column;
+      align-items: center; justify-content: center;
+      z-index: 300; padding: 24px;
+    }
+    .screen.show { display: flex; }
+
+    #start-screen {
+      background: linear-gradient(135deg, #FFE85C 0%, #FB7185 100%);
+    }
+    #start-screen h1 {
+      font-family: "Chalkboard SE", sans-serif;
+      font-size: clamp(56px, 9vw, 110px);
+      color: white; margin: 0 0 12px;
+      -webkit-text-stroke: 4px var(--ink);
+      text-shadow: 0 8px 0 var(--ink);
+      transform: rotate(-3deg);
+    }
+    #start-screen .subtitle {
+      font-size: 24px; color: var(--ink); font-weight: 700;
+      margin-bottom: 48px; opacity: 0.85;
+    }
+
+    #pause-screen {
+      background: rgba(15, 23, 42, 0.55);
+      backdrop-filter: blur(6px);
+    }
+    #pause-screen .pause-title {
+      font-size: 96px; color: white; font-weight: 900;
+      -webkit-text-stroke: 4px var(--ink);
+      margin: 0 0 36px;
+    }
+
+    #win-screen {
+      background: linear-gradient(135deg, #FFD074 0%, #EC4899 50%, #7DD3FC 100%);
+    }
+    #win-screen h1 {
+      font-family: "Chalkboard SE", sans-serif;
+      font-size: clamp(72px, 12vw, 160px);
+      color: white; margin: 0 0 16px;
+      -webkit-text-stroke: 5px var(--ink);
+      text-shadow: 0 10px 0 var(--ink);
+      animation: bigBounce 0.8s cubic-bezier(.34,1.56,.64,1);
+    }
+    #win-screen .win-sub {
+      font-size: 32px; color: white; font-weight: 700;
+      -webkit-text-stroke: 1px var(--ink);
+      margin-bottom: 48px;
+    }
+    @keyframes bigBounce {
+      0%   { transform: scale(0) rotate(-15deg); }
+      60%  { transform: scale(1.15) rotate(4deg); }
+      100% { transform: scale(1) rotate(0); }
+    }
+
+    /* 大按钮 —— 用在 start / replay */
+    .big-btn {
+      font-family: inherit;
+      font-size: 44px; font-weight: 900;
+      padding: 26px 72px;
+      background: var(--action); color: white;
+      border: 6px solid var(--ink);
+      border-radius: 80px;
+      cursor: pointer;
+      box-shadow: 0 10px 0 var(--action-shadow);
+      transition: transform 0.08s, box-shadow 0.08s;
+      -webkit-text-stroke: 2px var(--ink);
+    }
+    .big-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 0 var(--action-shadow); }
+    .big-btn:active { transform: translateY(6px); box-shadow: 0 4px 0 var(--action-shadow); }
+    .big-btn.green { background: var(--good); box-shadow: 0 10px 0 var(--good-shadow); }
+    .big-btn.green:active { box-shadow: 0 4px 0 var(--good-shadow); }
+
+    /* 烟花粒子 */
+    .firework {
+      position: absolute; width: 10px; height: 10px;
+      border-radius: 50%; pointer-events: none;
+      animation: fireworkBurst 1.4s ease-out forwards;
+    }
+    @keyframes fireworkBurst {
+      0%   { transform: translate(0, 0) scale(1); opacity: 1; }
+      100% { transform: translate(var(--fx), var(--fy)) scale(0.2); opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+  <!-- ============================================================
+       舞台 + 背景
+       ============================================================ -->
+  <div id="stage">
+    <div class="sun"></div>
+    <div class="cloud c1"></div>
+    <div class="cloud c2"></div>
+    <div class="cloud c3"></div>
+
+    <!-- 多层波浪 -->
+    <div class="waves">
+      <svg class="w1" viewBox="0 0 1200 120" preserveAspectRatio="none">
+        <path d="M0,60 Q150,10 300,60 T600,60 T900,60 T1200,60 L1200,120 L0,120 Z" fill="var(--sea-1)"/>
+      </svg>
+      <svg class="w2" viewBox="0 0 1200 120" preserveAspectRatio="none">
+        <path d="M0,80 Q150,30 300,80 T600,80 T900,80 T1200,80 L1200,120 L0,120 Z" fill="var(--sea-2)"/>
+      </svg>
+      <svg class="w3" viewBox="0 0 1200 120" preserveAspectRatio="none">
+        <path d="M0,90 Q150,50 300,90 T600,90 T900,90 T1200,90 L1200,120 L0,120 Z" fill="var(--sea-3)"/>
+      </svg>
+    </div>
+    <div class="sand-strip"></div>
+  </div>
+
+  <!-- ============================================================
+       HUD
+       ============================================================ -->
+  <div id="hud">
+    <div class="row">
+      <span class="level-tag" id="hud-level">第 1 关</span>
+      <span class="stars" id="hud-stars">☆☆☆☆☆</span>
+    </div>
+    <div class="row">
+      <span class="label">漏:</span>
+      <span class="misses" id="hud-misses">○○○○○○</span>
+    </div>
+    <div class="row">
+      <span class="label">分数</span>
+      <span class="score-num" id="hud-score">0</span>
+    </div>
+  </div>
+
+  <!-- 控制按钮 -->
+  <div id="controls">
+    <div class="vol-box" title="船的速度">
+      <span class="icon-btn" style="cursor:default;">🐢</span>
+      <input type="range" id="speed-slider" min="50" max="180" value="100" aria-label="船的速度">
+      <span class="icon-btn" style="cursor:default;">🐇</span>
+    </div>
+    <div class="vol-box" title="背景音乐">
+      <button class="icon-btn" id="btn-bgm" aria-label="背景音乐开关">🎵</button>
+      <input type="range" id="vol-slider" min="0" max="100" value="30" aria-label="背景音乐音量">
+    </div>
+    <button class="ctrl-btn" id="btn-pause" title="暂停" aria-label="暂停">⏸</button>
+    <button class="ctrl-btn" id="btn-restart" title="重新开始" aria-label="重新开始">↻</button>
+  </div>
+
+  <!-- ============================================================
+       三个全屏 Screen
+       ============================================================ -->
+  <div id="start-screen" class="screen show">
+    <h1>数字小游戏</h1>
+    <p class="subtitle">看到船 · 按对应数字键 · 击中得分</p>
+    <button class="big-btn" id="btn-start">▶ 开始</button>
+  </div>
+
+  <div id="pause-screen" class="screen">
+    <div class="pause-title">已暂停</div>
+    <button class="big-btn green" id="btn-resume">继续游戏</button>
+  </div>
+
+  <div id="win-screen" class="screen">
+    <h1>你赢了！</h1>
+    <p class="win-sub">通过全部 10 关 · 真厉害！</p>
+    <button class="big-btn" id="btn-replay">再玩一次</button>
+  </div>
+
+  <script>
+    // ============================================================
+    // 数据 & 配置
+    // ============================================================
+    // 已知角色的元数据（中文名 + 系列）。base 名 = images/ 里 png 的主文件名
+    // 你想新增角色：在这里加一行，然后把 png 扔进 images/，命名 <base>.png
+    // 你想让某个角色出现更频繁：到 images/ 复制那张 png，命名 <base>_副本.png / <base>_副本2.png ...
+    const NAME_MAP = {
+      'pawpatrol-ryder':     { name: '莱德',       series: 'pawpatrol' },
+      'pawpatrol-chase':     { name: '阿奇',       series: 'pawpatrol' },
+      'pawpatrol-marshall':  { name: '毛毛',       series: 'pawpatrol' },
+      'pawpatrol-skye':      { name: '天天',       series: 'pawpatrol' },
+      'pawpatrol-rocky':     { name: '灰灰',       series: 'pawpatrol' },
+      'pawpatrol-rubble':    { name: '小砾',       series: 'pawpatrol' },
+      'pawpatrol-zuma':      { name: '路马',       series: 'pawpatrol' },
+      'pawpatrol-everest':   { name: '珠珠',       series: 'pawpatrol' },
+      'zootopia-judy':       { name: '朱迪',       series: 'zootopia' },
+      'zootopia-nick':       { name: '尼克',       series: 'zootopia' },
+      'zootopia-flash':      { name: '闪电',       series: 'zootopia' },
+      'zootopia-bogo':       { name: '牛局长',     series: 'zootopia' },
+      'zootopia-clawhauser': { name: '本杰明',     series: 'zootopia' },
+      'zootopia-gazelle':    { name: '夏奇拉',     series: 'zootopia' },
+      'zootopia-bellwether': { name: '副市长',     series: 'zootopia' },
+      'zootopia-mrbig':      { name: '大先生',     series: 'zootopia' },
+      'peppa-peppa':         { name: '佩奇',       series: 'peppa' },
+      'peppa-george':        { name: '乔治',       series: 'peppa' },
+      'peppa-daddypig':      { name: '猪爸爸',     series: 'peppa' },
+      'peppa-mummypig':      { name: '猪妈妈',     series: 'peppa' },
+      'peppa-suzy':          { name: '苏西',       series: 'peppa' },
+      'peppa-rebecca':       { name: '兔妈妈',     series: 'peppa' },
+      'peppa-danny':         { name: '小狗丹尼',   series: 'peppa' },
+      'peppa-emily':         { name: '大象艾米丽', series: 'peppa' },
+    };
+
+    // 启动时探测每个 base 的所有可能变种（原图 + 副本 + -数字 后缀）
+    // 探测成功的每张都进池子；同一 base 的多份复制 = 多条池子项 = 出现频率成倍
+    const VARIANT_SUFFIXES = [
+      '',
+      '_副本', '_副本2', '_副本3', '_副本4', '_副本5',
+      '_副本6', '_副本7', '_副本8', '_副本9',
+      '-2', '-3', '-4', '-5', '-6', '-7', '-8', '-9',
+    ];
+
+    let CHARACTER_POOL = [];
+
+    function probeImage(base, suffix) {
+      return new Promise(resolve => {
+        const filename = `${base}${suffix}.png`;
+        const img = new Image();
+        img.onload  = () => resolve({ id: `${base}${suffix}`, base, ...NAME_MAP[base] });
+        img.onerror = () => resolve(null);
+        img.src = `images/${encodeURI(filename)}`;
+      });
+    }
+
+    async function loadImagePool() {
+      const probes = [];
+      for (const base of Object.keys(NAME_MAP)) {
+        for (const suffix of VARIANT_SUFFIXES) {
+          probes.push(probeImage(base, suffix));
+        }
+      }
+      const results = await Promise.all(probes);
+      CHARACTER_POOL = results.filter(r => r !== null);
+      // 统计每个 base 找到几份
+      const counts = {};
+      CHARACTER_POOL.forEach(c => counts[c.base] = (counts[c.base] || 0) + 1);
+      console.log('图片池:', CHARACTER_POOL.length, '条 ｜ 按 base 统计:', counts);
+    }
+
+    // 10 关：数字范围始终 1-9，关卡只调"同屏船数 + 速度"。曲线为 4 岁向极缓爬
+    const LEVEL_CONFIG = [
+      { level: 1,  maxDigit: 9, maxOnScreen: 2, spawnIntervalMs: [4000, 5500], driftSec: 16 }, // 超慢热身
+      { level: 2,  maxDigit: 9, maxOnScreen: 2, spawnIntervalMs: [3500, 4800], driftSec: 14 },
+      { level: 3,  maxDigit: 9, maxOnScreen: 3, spawnIntervalMs: [3000, 4200], driftSec: 13 },
+      { level: 4,  maxDigit: 9, maxOnScreen: 3, spawnIntervalMs: [2600, 3600], driftSec: 11 },
+      { level: 5,  maxDigit: 9, maxOnScreen: 4, spawnIntervalMs: [2300, 3200], driftSec: 10 },
+      { level: 6,  maxDigit: 9, maxOnScreen: 4, spawnIntervalMs: [2000, 2800], driftSec: 9 },
+      { level: 7,  maxDigit: 9, maxOnScreen: 4, spawnIntervalMs: [1800, 2500], driftSec: 8 },
+      { level: 8,  maxDigit: 9, maxOnScreen: 5, spawnIntervalMs: [1600, 2200], driftSec: 7 },
+      { level: 9,  maxDigit: 9, maxOnScreen: 5, spawnIntervalMs: [1400, 2000], driftSec: 6 },
+      { level: 10, maxDigit: 9, maxOnScreen: 6, spawnIntervalMs: [1200, 1700], driftSec: 5 },
+    ];
+
+    const HITS_TO_LEVEL_UP = 4;  // 每关击中 4 条升级（共 40 击中通关）
+    const MISSES_TO_RESET  = 6;
+
+    // 速度倍率：100 = 原速，50 = 慢一半（船飘 2x 时间），180 = 快近 2x
+    // 实际 driftSec = 基础 driftSec * (100 / speedPct)
+    let speedPct = 100;
+
+    // ============================================================
+    // 音效 + 背景音乐（Web Audio API 全合成）
+    // ============================================================
+    let audioCtx = null;
+    let bgmGain = null;     // BGM 走这条，受 slider 控制
+    let sfxGain = null;     // SFX 走这条，永远满音量
+    let bgmEnabled = true;
+    let bgmTimer = null;
+    let bgmStep = 0;
+
+    function getAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        sfxGain = audioCtx.createGain();
+        sfxGain.gain.value = 1.0;
+        sfxGain.connect(audioCtx.destination);
+        bgmGain = audioCtx.createGain();
+        bgmGain.gain.value = 0.30;  // 与 slider 初始值同步
+        bgmGain.connect(audioCtx.destination);
+      }
+      return audioCtx;
+    }
+
+    // 通用：播一个带 ADSR 包络的音；target = sfxGain 或 bgmGain
+    function playToneOn(target, freq, durationMs, type = 'sine', volume = 0.5) {
+      const ctx = getAudio();
+      const t = ctx.currentTime;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = type; osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0, t);
+      gain.gain.linearRampToValueAtTime(volume, t + 0.008);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + durationMs / 1000);
+      osc.connect(gain); gain.connect(target);
+      osc.start(t); osc.stop(t + durationMs / 1000 + 0.02);
+    }
+    function playTone(freq, durMs, type, vol) {
+      playToneOn(sfxGain || getAudio().destination, freq, durMs, type, vol);
+    }
+
+    // 击中：3 音和弦（C6 + E6 + G6）+ 短噪音爆点，远超之前响度
+    function playHit() {
+      getAudio();
+      playToneOn(sfxGain, 1046.50, 250, 'sine',     0.55);  // C6
+      playToneOn(sfxGain, 1318.51, 250, 'sine',     0.45);  // E6
+      playToneOn(sfxGain, 1567.98, 280, 'triangle', 0.35);  // G6
+      // 高音"叮"短爆音
+      playToneOn(sfxGain, 2093.00, 120, 'square',   0.18);
+    }
+
+    // 失败：双音下行 + 颤动
+    function playReset() {
+      getAudio();
+      playToneOn(sfxGain, 587.33, 220, 'sawtooth', 0.45);  // D5
+      setTimeout(() => playToneOn(sfxGain, 440.00, 200, 'sawtooth', 0.45), 180);  // A4
+      setTimeout(() => playToneOn(sfxGain, 329.63, 400, 'triangle', 0.55), 380);  // E4
+    }
+
+    const SFX = {
+      hit:    playHit,
+      reset:  playReset,
+      levelUp:() => {
+        getAudio();
+        [
+          { freq: 523.25, dur: 160 },  // C5
+          { freq: 659.25, dur: 160 },  // E5
+          { freq: 783.99, dur: 160 },  // G5
+          { freq: 1046.50, dur: 240 }, // C6
+        ].forEach((n, i) => setTimeout(() => playToneOn(sfxGain, n.freq, n.dur, 'triangle', 0.55), i * 140));
+      },
+      win:    () => {
+        getAudio();
+        [
+          { freq: 523.25, dur: 180 },
+          { freq: 659.25, dur: 180 },
+          { freq: 783.99, dur: 180 },
+          { freq: 1046.50, dur: 180 },
+          { freq: 783.99, dur: 180 },
+          { freq: 1046.50, dur: 320 },
+        ].forEach((n, i) => setTimeout(() => {
+          playToneOn(sfxGain, n.freq, n.dur, 'triangle', 0.6);
+          playToneOn(sfxGain, n.freq * 2, n.dur, 'sine', 0.25);  // 加一层泛音
+        }, i * 160));
+      },
+    };
+
+    // ============================================================
+    // BGM —— 12 音温柔上行琶音 loop（C 大调），每音 500ms，共 6 秒一圈
+    // ============================================================
+    const BGM_NOTES = [
+      261.63, 329.63, 392.00, 523.25,   // C4 E4 G4 C5
+      392.00, 329.63, 261.63, 196.00,   // G4 E4 C4 G3
+      349.23, 440.00, 523.25, 659.25,   // F4 A4 C5 E5
+    ];
+    function bgmTick() {
+      if (!bgmEnabled) return;
+      const freq = BGM_NOTES[bgmStep % BGM_NOTES.length];
+      // 主旋律
+      playToneOn(bgmGain, freq, 600, 'sine', 0.5);
+      // 低音衬底（隔一拍）
+      if (bgmStep % 2 === 0) {
+        playToneOn(bgmGain, freq / 2, 800, 'triangle', 0.25);
+      }
+      bgmStep++;
+      bgmTimer = setTimeout(bgmTick, 500);
+    }
+    function startBGM() {
+      if (bgmTimer) return;
+      bgmEnabled = true;
+      getAudio();
+      bgmTick();
+    }
+    function stopBGM() {
+      bgmEnabled = false;
+      if (bgmTimer) { clearTimeout(bgmTimer); bgmTimer = null; }
+    }
+
+    // ============================================================
+    // 游戏状态
+    // ============================================================
+    const state = {
+      levelIdx: 0,
+      hits: 0,
+      misses: 0,
+      totalScore: 0,
+      ships: [],
+      recentDigits: [],   // 最近 3 个 digit，新一艘不在这里面
+      recentCharIds: [],  // 最近 5 个 char id，避免短期重复
+      isWon: false,
+      isPaused: true,
+      isStarted: false,
+    };
+    const RECENT_DIGITS_LEN  = 3;
+    const RECENT_CHARIDS_LEN = 5;
+
+    // ============================================================
+    // 工具
+    // ============================================================
+    function shuffle(arr) {
+      const a = arr.slice();
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+    const STAGE_W = () => window.innerWidth;
+    const STAGE_H = () => window.innerHeight;
+    const levelConf = () => LEVEL_CONFIG[state.levelIdx];
+
+    // ============================================================
+    // 起局 + HUD
+    // ============================================================
+    function newGame() {
+      state.levelIdx = 0;
+      state.hits = 0;
+      state.misses = 0;
+      state.totalScore = 0;
+      state.ships = [];
+      state.recentDigits = [];
+      state.recentCharIds = [];
+      state.isWon = false;
+      document.querySelectorAll('.ship').forEach(e => e.remove());
+      renderHUD();
+      console.log("新一局开始 — 池子大小:", CHARACTER_POOL.length);
+    }
+
+    // 随机抽一个角色：以 base 名做"最近 N 个"去重（同角色多份副本视为同一个）
+    function pickRandomChar() {
+      if (CHARACTER_POOL.length === 0) return null;
+      const recentBases = new Set(state.recentCharIds);  // 注意：里面存的是 base
+      let cand = CHARACTER_POOL.filter(c => !recentBases.has(c.base));
+      if (cand.length === 0) cand = CHARACTER_POOL;
+      return cand[Math.floor(Math.random() * cand.length)];
+    }
+    function renderHUD() {
+      document.getElementById('hud-level').textContent = `第 ${levelConf().level} 关`;
+      document.getElementById('hud-stars').textContent =
+        '★'.repeat(state.hits) + '☆'.repeat(HITS_TO_LEVEL_UP - state.hits);
+      document.getElementById('hud-misses').textContent =
+        '●'.repeat(state.misses) + '○'.repeat(MISSES_TO_RESET - state.misses);
+      document.getElementById('hud-score').textContent = state.totalScore;
+    }
+
+    // ============================================================
+    // 船 —— 渲染 + 飘行（CSS animation）
+    // ============================================================
+    function createShipEl(digit, char) {
+      const el = document.createElement('div');
+      el.className = 'ship';
+      el.dataset.digit = digit;
+      el.dataset.series = char.series;
+      el.innerHTML = `
+        <div class="bob">
+          <div class="sail"><span class="digit">${digit}</span></div>
+          <div class="mast"></div>
+          <div class="char" style="background-image:url('images/${char.id}.png');"></div>
+          <div class="hull"></div>
+        </div>
+      `;
+      return el;
+    }
+
+    function spawnShip(digit, char, driftSec) {
+      const el = createShipEl(digit, char);
+      // 从屏外左侧出生，向右飘到屏外右侧消失
+      const shipW = 240;
+      const startX = -shipW - 30;
+      const yMin = 110, yMax = STAGE_H() - 360;
+      const y = yMin + Math.random() * Math.max(yMax - yMin, 50);
+      const travel = STAGE_W() + shipW + 60;
+      el.style.left = startX + 'px';
+      el.style.top  = y + 'px';
+      el.style.setProperty('--drift-sec', driftSec + 's');
+      el.style.setProperty('--travel', travel + 'px');
+      document.getElementById('stage').appendChild(el);
+      el.classList.add('drifting');
+
+      const ship = { digit, char, el, removed: false };
+      state.ships.push(ship);
+
+      // 漂出屏外销毁 + 漏掉判定
+      setTimeout(() => {
+        if (ship.removed) return;
+        ship.removed = true;
+        el.remove();
+        state.ships = state.ships.filter(s => s !== ship);
+        if (state.isWon || !state.isStarted) return;
+
+        state.misses += 1;
+        console.log('漏掉:', digit, char.name, '连漏', state.misses);
+        renderHUD();
+
+        if (state.misses >= MISSES_TO_RESET) {
+          state.hits = 0;
+          state.misses = 0;
+          SFX.reset();
+          renderHUD();
+          showOverlay('再来！', 900);
+        }
+      }, driftSec * 1000 + 200);
+    }
+
+    // ============================================================
+    // 调度器
+    // ============================================================
+    function canSpawn() {
+      if (state.isPaused || state.isWon || !state.isStarted) return false;
+      if (CHARACTER_POOL.length === 0) return false;  // 图片池还没探测完
+      if (state.ships.length >= levelConf().maxOnScreen) return false;
+      return true;
+    }
+    function pickNextDigit() {
+      const max = levelConf().maxDigit;
+      const onScreen = new Set(state.ships.map(s => s.digit));
+      // 候选：本关允许 + 屏上不在 + 不在最近 N 个里
+      let cand = [];
+      for (let d = 1; d <= max; d++) {
+        if (onScreen.has(d)) continue;
+        if (state.recentDigits.includes(d)) continue;
+        cand.push(d);
+      }
+      // 退化 1：若禁最近 N 后无候选，只看屏上
+      if (cand.length === 0) {
+        for (let d = 1; d <= max; d++) if (!onScreen.has(d)) cand.push(d);
+      }
+      if (cand.length === 0) return null;
+      return cand[Math.floor(Math.random() * cand.length)];
+    }
+    function scheduleNextSpawn() {
+      const [minMs, maxMs] = levelConf().spawnIntervalMs;
+      const speedMul = 100 / speedPct;
+      const delay = (minMs + Math.random() * (maxMs - minMs)) * speedMul;
+      setTimeout(() => {
+        if (canSpawn()) {
+          const d = pickNextDigit();
+          const char = pickRandomChar();
+          if (d !== null && char !== null) {
+            const driftSec = levelConf().driftSec * speedMul;
+            spawnShip(d, char, driftSec);
+            state.recentDigits.push(d);
+            if (state.recentDigits.length > RECENT_DIGITS_LEN) state.recentDigits.shift();
+            state.recentCharIds.push(char.base);  // 存 base，让所有副本共享冷却
+            if (state.recentCharIds.length > RECENT_CHARIDS_LEN) state.recentCharIds.shift();
+          }
+        }
+        scheduleNextSpawn();
+      }, delay);
+    }
+
+    // ============================================================
+    // 击中
+    // ============================================================
+    function tryHit(digit) {
+      if (state.isPaused || state.isWon || !state.isStarted) return;
+      const ship = state.ships.find(s => s.digit === digit && !s.removed);
+      if (!ship) return;
+
+      ship.removed = true;
+      const rect = ship.el.getBoundingClientRect();
+      const stage = document.getElementById('stage');
+      const burst = document.createElement('div');
+      burst.className = 'pop-burst';
+      burst.style.left = (rect.left + rect.width/2 - 100) + 'px';
+      burst.style.top  = (rect.top  + rect.height/2 - 100) + 'px';
+      stage.appendChild(burst);
+      setTimeout(() => burst.remove(), 500);
+
+      const cx = rect.left + rect.width/2;
+      const cy = rect.top  + rect.height/2;
+      for (let i = 0; i < 8; i++) {
+        const star = document.createElement('div');
+        star.className = 'pop-star';
+        star.textContent = '⭐';
+        star.style.left = (cx - 20) + 'px';
+        star.style.top  = (cy - 20) + 'px';
+        const angle = (i / 8) * Math.PI * 2;
+        star.style.setProperty('--dx', Math.cos(angle) * 100 + 'px');
+        star.style.setProperty('--dy', Math.sin(angle) * 100 + 'px');
+        stage.appendChild(star);
+        setTimeout(() => star.remove(), 600);
+      }
+
+      ship.el.remove();
+      state.ships = state.ships.filter(s => s !== ship);
+
+      SFX.hit();
+      state.hits += 1;
+      state.totalScore += 1;
+      state.misses = 0;
+
+      if (state.hits >= HITS_TO_LEVEL_UP) {
+        if (state.levelIdx < LEVEL_CONFIG.length - 1) {
+          state.levelIdx += 1;
+          state.hits = 0;
+          SFX.levelUp();
+          showOverlay(`第 ${levelConf().level} 关！`, 1500);
+        } else {
+          winGame();
+        }
+      }
+      renderHUD();
+      console.log('击中', digit, ship.char.name, '本关', state.hits, '/5');
+    }
+
+    // ============================================================
+    // 覆盖层 + 通关 + 烟花
+    // ============================================================
+    function showOverlay(text, durationMs) {
+      const wasPaused = state.isPaused;
+      state.isPaused = true;
+      const o = document.createElement('div');
+      o.className = 'overlay';
+      o.innerHTML = `<div class="bubble">${text}</div>`;
+      document.body.appendChild(o);
+      setTimeout(() => {
+        o.remove();
+        state.isPaused = wasPaused;
+      }, durationMs);
+    }
+
+    function winGame() {
+      SFX.win();
+      state.isWon = true;
+      state.isPaused = true;
+      document.getElementById('win-screen').classList.add('show');
+      launchFireworks();
+    }
+
+    function launchFireworks() {
+      const colors = ['#FB7185', '#FBBF24', '#84CC16', '#22D3EE', '#FFFFFF', '#EC4899'];
+      const screen = document.getElementById('win-screen');
+      let bursts = 0;
+      const interval = setInterval(() => {
+        const cx = Math.random() * window.innerWidth;
+        const cy = window.innerHeight * 0.15 + Math.random() * window.innerHeight * 0.5;
+        for (let i = 0; i < 22; i++) {
+          const p = document.createElement('div');
+          p.className = 'firework';
+          p.style.left = cx + 'px';
+          p.style.top  = cy + 'px';
+          p.style.background = colors[Math.floor(Math.random() * colors.length)];
+          const a = (i / 22) * Math.PI * 2;
+          const r = 120 + Math.random() * 80;
+          p.style.setProperty('--fx', Math.cos(a) * r + 'px');
+          p.style.setProperty('--fy', Math.sin(a) * r + 'px');
+          screen.appendChild(p);
+          setTimeout(() => p.remove(), 1400);
+        }
+        bursts++;
+        if (bursts >= 6) clearInterval(interval);
+      }, 550);
+    }
+
+    // ============================================================
+    // 按钮：开始 / 暂停 / 继续 / 重玩
+    // ============================================================
+    function startGame() {
+      state.isStarted = true;
+      state.isPaused = false;
+      state.isWon = false;
+      document.getElementById('start-screen').classList.remove('show');
+      document.getElementById('pause-screen').classList.remove('show');
+      document.getElementById('win-screen').classList.remove('show');
+      try { getAudio().resume(); } catch (e) {}
+      // 启动 BGM（如开关开着）
+      if (bgmEnabled) startBGM();
+    }
+    function pauseGame() {
+      if (!state.isStarted || state.isWon) return;
+      state.isPaused = true;
+      document.getElementById('pause-screen').classList.add('show');
+      document.querySelectorAll('.ship.drifting').forEach(el => el.style.animationPlayState = 'paused');
+      stopBGM();   // 暂停时停 BGM
+    }
+    function resumeGame() {
+      state.isPaused = false;
+      document.getElementById('pause-screen').classList.remove('show');
+      document.querySelectorAll('.ship.drifting').forEach(el => el.style.animationPlayState = 'running');
+      if (bgmEnabled) startBGM();
+    }
+    function restartGame() {
+      newGame();
+      startGame();
+    }
+
+    document.getElementById('btn-start').addEventListener('click', () => {
+      newGame();
+      startGame();
+    });
+    document.getElementById('btn-pause').addEventListener('click', pauseGame);
+    document.getElementById('btn-resume').addEventListener('click', resumeGame);
+    document.getElementById('btn-restart').addEventListener('click', restartGame);
+    document.getElementById('btn-replay').addEventListener('click', restartGame);
+
+    // BGM 开关按钮
+    document.getElementById('btn-bgm').addEventListener('click', () => {
+      const btn = document.getElementById('btn-bgm');
+      if (bgmEnabled) {
+        stopBGM();
+        btn.textContent = '🔇';
+        btn.classList.add('off');
+      } else {
+        bgmEnabled = true;
+        btn.textContent = '🎵';
+        btn.classList.remove('off');
+        if (state.isStarted && !state.isPaused) startBGM();
+      }
+    });
+
+    // 背景音乐音量
+    document.getElementById('vol-slider').addEventListener('input', (e) => {
+      const v = parseInt(e.target.value, 10) / 100;
+      getAudio();
+      if (bgmGain) bgmGain.gain.value = v;
+    });
+
+    // 船速度
+    document.getElementById('speed-slider').addEventListener('input', (e) => {
+      speedPct = parseInt(e.target.value, 10);
+    });
+
+    // 键盘：数字击中 + 空格暂停/继续
+    document.addEventListener('keydown', (e) => {
+      if (e.key === ' ' || e.code === 'Space') {
+        e.preventDefault();
+        if (!state.isStarted) return;
+        if (state.isWon) return;
+        if (state.isPaused) resumeGame(); else pauseGame();
+        return;
+      }
+      const d = parseInt(e.key, 10);
+      if (Number.isInteger(d) && d >= 1 && d <= 9) tryHit(d);
+    });
+
+    // 异步探测 images/ 目录里所有图片（包括 _副本 复制版）然后启动主循环
+    loadImagePool().then(() => {
+      scheduleNextSpawn();
+    });
+  </script>
+</body>
+</html>
