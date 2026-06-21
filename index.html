@@ -277,6 +277,7 @@
     .ship[data-series="pawpatrol"] { --series-color: var(--series-pawpatrol); }
     .ship[data-series="zootopia"]  { --series-color: var(--series-zootopia); }
     .ship[data-series="peppa"]     { --series-color: var(--series-peppa); }
+    .ship[data-series="default"]   { --series-color: #F59E0B; }  /* 未知前缀 → 金橙色船 */
 
     /* ============================================================
        命中特效 —— 大粒子 + 五角星
@@ -479,7 +480,12 @@
   <div id="start-screen" class="screen show">
     <h1>数字小游戏</h1>
     <p class="subtitle">看到船 · 按对应数字键 · 击中得分</p>
-    <button class="big-btn" id="btn-start">▶ 开始</button>
+    <button class="big-btn" id="btn-start" style="display:none;">▶ 开始</button>
+    <button class="big-btn green" id="btn-pick-folder" style="display:none;">📁 选择 images 文件夹</button>
+    <p class="subtitle" id="picker-hint" style="display:none; margin-top:24px; font-size:18px;">第一次玩需要选一下图片文件夹</p>
+    <a href="#" id="link-rescan" style="display:none; color:#1E293B; font-size:16px; margin-top:32px; text-decoration:underline;">加了新图？点这里重新选文件夹</a>
+    <!-- 隐藏的文件夹选择器 -->
+    <input type="file" id="folder-input" webkitdirectory multiple accept="image/png" style="display:none;">
   </div>
 
   <div id="pause-screen" class="screen">
@@ -527,40 +533,118 @@
       'peppa-emily':         { name: '大象艾米丽', series: 'peppa' },
     };
 
-    // 启动时探测每个 base 的所有可能变种（原图 + 副本 + -数字 后缀）
-    // 探测成功的每张都进池子；同一 base 的多份复制 = 多条池子项 = 出现频率成倍
-    const VARIANT_SUFFIXES = [
-      '',
-      '_副本', '_副本2', '_副本3', '_副本4', '_副本5',
-      '_副本6', '_副本7', '_副本8', '_副本9',
-      '-2', '-3', '-4', '-5', '-6', '-7', '-8', '-9',
-    ];
-
+    // 角色池（启动后填充）
     let CHARACTER_POOL = [];
 
-    function probeImage(base, suffix) {
-      return new Promise(resolve => {
-        const filename = `${base}${suffix}.png`;
-        const img = new Image();
-        img.onload  = () => resolve({ id: `${base}${suffix}`, base, ...NAME_MAP[base] });
-        img.onerror = () => resolve(null);
-        img.src = `images/${encodeURI(filename)}`;
-      });
+    // 从文件名拼出 char 对象。任意 png 都能用，前缀决定船的颜色
+    // 已知前缀: pawpatrol- / zootopia- / peppa- → 系列色; 其他 → 金橙色
+    // 同名复制（chase_副本.png / chase-2.png）= 多条池子项 = 频率成倍
+    function makeCharFromFilename(filename, src) {
+      const stem = filename.replace(/\.png$/i, '');
+      // base = 去掉 _副本N 或 -N 后缀
+      const base = stem.replace(/_副本\d*$/, '').replace(/-\d+$/, '');
+      let series = 'default';
+      let name = base;
+      if (NAME_MAP[base]) {
+        series = NAME_MAP[base].series;
+        name   = NAME_MAP[base].name;
+      } else if (base.startsWith('pawpatrol-')) { series = 'pawpatrol'; name = base.slice(10); }
+      else if (base.startsWith('zootopia-'))    { series = 'zootopia';  name = base.slice(9); }
+      else if (base.startsWith('peppa-'))       { series = 'peppa';     name = base.slice(6); }
+      return { id: stem, base, name, series, src };
     }
 
-    async function loadImagePool() {
-      const probes = [];
-      for (const base of Object.keys(NAME_MAP)) {
-        for (const suffix of VARIANT_SUFFIXES) {
-          probes.push(probeImage(base, suffix));
-        }
+    // ---- IndexedDB 缓存（持久化你选过的文件夹内容）----
+    const IDB_NAME = 'numgame-images';
+    function openIDB() {
+      return new Promise((res, rej) => {
+        const req = indexedDB.open(IDB_NAME, 1);
+        req.onupgradeneeded = () => req.result.createObjectStore('blobs');
+        req.onsuccess = () => res(req.result);
+        req.onerror   = () => rej(req.error);
+      });
+    }
+    async function saveBlobs(map) {
+      const db = await openIDB();
+      const tx = db.transaction('blobs', 'readwrite');
+      const store = tx.objectStore('blobs');
+      store.clear();
+      for (const [name, blob] of Object.entries(map)) store.put(blob, name);
+      return new Promise(res => tx.oncomplete = res);
+    }
+    async function loadBlobs() {
+      try {
+        const db = await openIDB();
+        return new Promise(res => {
+          const tx = db.transaction('blobs', 'readonly');
+          const store = tx.objectStore('blobs');
+          const map = {};
+          store.openCursor().onsuccess = (e) => {
+            const c = e.target.result;
+            if (c) { map[c.key] = c.value; c.continue(); }
+            else res(map);
+          };
+        });
+      } catch (e) {
+        console.warn('IndexedDB 不可用', e);
+        return {};
       }
-      const results = await Promise.all(probes);
-      CHARACTER_POOL = results.filter(r => r !== null);
-      // 统计每个 base 找到几份
+    }
+
+    // 把 blob map 构建成 CHARACTER_POOL
+    function buildPoolFromBlobs(blobMap) {
+      // 撤销之前的 blob URLs 防内存泄漏
+      CHARACTER_POOL.forEach(c => { if (c.src && c.src.startsWith('blob:')) URL.revokeObjectURL(c.src); });
+      CHARACTER_POOL = Object.entries(blobMap).map(([name, blob]) => {
+        const url = URL.createObjectURL(blob);
+        return makeCharFromFilename(name, url);
+      });
       const counts = {};
       CHARACTER_POOL.forEach(c => counts[c.base] = (counts[c.base] || 0) + 1);
       console.log('图片池:', CHARACTER_POOL.length, '条 ｜ 按 base 统计:', counts);
+    }
+
+    // 启动：尝试从 IDB 加载；有 → 立刻就绪；无 → 显示文件夹选择按钮
+    async function loadImagePool() {
+      const cached = await loadBlobs();
+      const startBtn  = document.getElementById('btn-start');
+      const pickBtn   = document.getElementById('btn-pick-folder');
+      const hint      = document.getElementById('picker-hint');
+      const rescan    = document.getElementById('link-rescan');
+      if (Object.keys(cached).length > 0) {
+        buildPoolFromBlobs(cached);
+        startBtn.style.display = '';
+        rescan.style.display = '';
+      } else {
+        pickBtn.style.display = '';
+        hint.style.display = '';
+      }
+    }
+
+    // 处理文件夹选择
+    function setupFolderPicker() {
+      const input = document.getElementById('folder-input');
+      const trigger = () => input.click();
+      document.getElementById('btn-pick-folder').addEventListener('click', trigger);
+      document.getElementById('link-rescan').addEventListener('click', (e) => {
+        e.preventDefault(); trigger();
+      });
+      input.addEventListener('change', async (e) => {
+        const files = Array.from(e.target.files).filter(f => /\.png$/i.test(f.name));
+        if (files.length === 0) {
+          alert('选的文件夹里没找到 png 图片');
+          return;
+        }
+        const map = {};
+        for (const f of files) map[f.name] = f;  // File 就是 Blob
+        await saveBlobs(map);
+        buildPoolFromBlobs(map);
+        document.getElementById('btn-pick-folder').style.display = 'none';
+        document.getElementById('picker-hint').style.display = 'none';
+        document.getElementById('btn-start').style.display = '';
+        document.getElementById('link-rescan').style.display = '';
+        input.value = '';  // 允许下次选同一文件夹
+      });
     }
 
     // 10 关：数字范围始终 1-9，关卡只调"同屏船数 + 速度"。曲线为 4 岁向极缓爬
@@ -780,7 +864,7 @@
         <div class="bob">
           <div class="sail"><span class="digit">${digit}</span></div>
           <div class="mast"></div>
-          <div class="char" style="background-image:url('images/${char.id}.png');"></div>
+          <div class="char" style="background-image:url('${char.src}');"></div>
           <div class="hull"></div>
         </div>
       `;
@@ -1059,10 +1143,10 @@
       if (Number.isInteger(d) && d >= 1 && d <= 9) tryHit(d);
     });
 
-    // 异步探测 images/ 目录里所有图片（包括 _副本 复制版）然后启动主循环
-    loadImagePool().then(() => {
-      scheduleNextSpawn();
-    });
+    // 绑定文件夹选择器，启动池子加载，启动调度
+    setupFolderPicker();
+    loadImagePool();
+    scheduleNextSpawn();
   </script>
 </body>
 </html>
